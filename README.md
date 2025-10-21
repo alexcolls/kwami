@@ -1,6 +1,8 @@
 # 👻 @kwami/core
 
-A 3D Interactive AI Companion Library for creating engaging AI companions with visual (blob), audio, and AI capabilities.
+An **independent, reusable** 3D Interactive AI Companion Library for creating engaging AI companions with visual (blob), audio, and AI capabilities.
+
+> **Independent Module:** This library can be used standalone in any JavaScript/TypeScript project or integrated as a submodule.
 
 ## ✨ Features
 
@@ -16,8 +18,29 @@ A 3D Interactive AI Companion Library for creating engaging AI companions with v
 
 ## 📦 Installation
 
+### Runtime Support
+
+This library supports multiple JavaScript runtimes:
+
+- **Bun** (recommended - default used by alexcolls) - Fast all-in-one JavaScript runtime
+- **Deno** - Secure TypeScript/JavaScript runtime  
+- **Node.js** - Traditional JavaScript runtime
+
+Choose your preferred package manager:
+
 ```bash
+# Using Bun (recommended)
+bun add @kwami/core three simplex-noise
+# or
+bun i @kwami/core three simplex-noise
+
+# Using Deno
+deno add npm:@kwami/core npm:three npm:simplex-noise
+
+# Using npm (Node.js)
 npm install @kwami/core three simplex-noise
+# or
+npm i @kwami/core three simplex-noise
 ```
 
 ## 🚀 Quick Start
@@ -311,7 +334,33 @@ We welcome contributions! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-MIT License - see LICENSE file for details
+**Dual License** - This library is available under two licenses:
+
+### Non-Commercial / Personal Use
+For personal, educational, and non-commercial use, this software is licensed under the **Apache License 2.0**.
+
+You are free to:
+- Use, copy, and modify the software
+- Distribute the software
+- Use it for personal projects and learning
+
+### Commercial / Business Use
+For commercial use, including:
+- Use in commercial products or services
+- Use by for-profit organizations
+- Use that generates revenue or commercial advantage
+
+You **MUST obtain a separate commercial license**.
+
+**To obtain a commercial license, contact:**
+- Alex Colls: [github.com/alexcolls](https://github.com/alexcolls)
+
+### Disclaimer
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. See the [LICENSE](./LICENSE) file for full terms.
+
+---
+
+**Copyright (c) 2025 Alex Colls**
 
 ## 🙏 Credits
 
