@@ -1,4 +1,4 @@
-# 👻 @kwami/core
+# 👻 @kwami
 
 An **independent, reusable** 3D Interactive AI Companion Library for creating engaging AI companions with visual (blob), audio, and AI capabilities.
 
