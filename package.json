@@ -40,13 +40,14 @@
   "author": "Alex Colls",
   "license": "Apache-2.0",
   "dependencies": {
+    "kwami": "2.0.0",
     "livekit-client": "^2.6.0",
     "simplex-noise": "^4.0.3",
     "three": ">=0.183.2"
   },
   "devDependencies": {
-    "@types/node": "25.3.5",
     "@eslint/js": "^10.0.1",
+    "@types/node": "25.3.5",
     "@types/three": "^0.170.0",
     "eslint": "^9.18.0",
     "globals": "^17.4.0",
