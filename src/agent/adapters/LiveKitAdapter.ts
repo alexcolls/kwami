@@ -975,6 +975,7 @@ class LiveKitPipeline implements AgentPipeline {
       body: JSON.stringify({
         room_name: roomName,
         participant_name: participantName,
+        kwamiId: this.config.userId,
       }),
     })
 

@@ -1,8 +1,9 @@
-import type { AvatarConfig, KwamiState, BlackHoleColorScheme } from '../types'
+import type { AvatarConfig, AvatarRendererType, KwamiState, BlackHoleColorScheme } from '../types'
 import type { BlobXyzSkinSelection } from './renderers/blob-xyz/types'
 import { Scene } from './scene'
 import { BlobXyz } from './renderers/blob-xyz'
 import { BlackHole } from './renderers/black-hole'
+import { ParticlesFace } from './renderers/particles-face'
 import { KwamiAudio } from './audio'
 import { logger } from '../utils/logger'
 
@@ -17,10 +18,11 @@ export class Avatar {
   private scene: Scene
   private blobXyz: BlobXyz | null = null
   private blackHole: BlackHole | null = null
+  private particlesFace: ParticlesFace | null = null
   private audio: KwamiAudio
   private currentState: KwamiState = 'idle'
   private resizeObserver: ResizeObserver | null = null
-  private currentRenderer: 'blob-xyz' | 'black-hole' = 'blob-xyz'
+  private currentRenderer: AvatarRendererType = 'blob-xyz'
 
   constructor(canvas: HTMLCanvasElement, config?: AvatarConfig) {
     this.canvas = canvas
@@ -48,8 +50,10 @@ export class Avatar {
     } else if (rendererType === 'black-hole') {
       this.currentRenderer = 'black-hole'
       this.initBlackHoleRenderer()
+    } else if (rendererType === 'particles-face') {
+      this.currentRenderer = 'particles-face'
+      this.initParticlesFaceRenderer()
     } else {
-      // Future: Support other renderer types
       logger.warn(`Renderer type "${rendererType}" not supported, falling back to blob-xyz`)
       this.currentRenderer = 'blob-xyz'
       this.initBlobXyzRenderer()
@@ -107,7 +111,18 @@ export class Avatar {
     )
 
     // Black hole adds itself to scene in constructor via group
-    // No need to add mesh separately
+  }
+
+  private initParticlesFaceRenderer(): void {
+    const pfConfig = this.config.particlesFace ?? {}
+
+    this.particlesFace = new ParticlesFace({
+      scene: this.scene.scene,
+      camera: this.scene.camera,
+      renderer: this.scene.renderer,
+      audio: this.audio,
+      ...pfConfig,
+    })
   }
 
   private setupResizeHandling(): void {
@@ -161,6 +176,11 @@ export class Avatar {
       this.blackHole.setState(state)
     }
 
+    // Handle state for particles-face renderer
+    if (this.currentRenderer === 'particles-face' && this.particlesFace) {
+      this.particlesFace.setState(state)
+    }
+
     logger.debug(`Avatar state changed: ${previousState} → ${state}`)
   }
 
@@ -178,7 +198,7 @@ export class Avatar {
   /**
    * Get the current renderer type
    */
-  getRendererType(): 'blob-xyz' | 'black-hole' {
+  getRendererType(): AvatarRendererType {
     return this.currentRenderer
   }
 
@@ -186,7 +206,7 @@ export class Avatar {
    * Switch to a different renderer type dynamically
    * Preserves the connection and state
    */
-  switchRenderer(newRenderer: 'blob-xyz' | 'black-hole'): void {
+  switchRenderer(newRenderer: AvatarRendererType): void {
     if (this.currentRenderer === newRenderer) {
       logger.debug(`Already using ${newRenderer} renderer`)
       return
@@ -205,6 +225,9 @@ export class Avatar {
     } else if (this.currentRenderer === 'black-hole' && this.blackHole) {
       this.blackHole.dispose()
       this.blackHole = null
+    } else if (this.currentRenderer === 'particles-face' && this.particlesFace) {
+      this.particlesFace.dispose()
+      this.particlesFace = null
     }
 
     // Initialize new renderer
@@ -213,6 +236,8 @@ export class Avatar {
       this.initBlobXyzRenderer()
     } else if (newRenderer === 'black-hole') {
       this.initBlackHoleRenderer()
+    } else if (newRenderer === 'particles-face') {
+      this.initParticlesFaceRenderer()
     }
 
     // Restore state
@@ -237,6 +262,13 @@ export class Avatar {
    */
   getBlackHole(): BlackHole | null {
     return this.blackHole
+  }
+
+  /**
+   * Get the particles face instance (for direct control)
+   */
+  getParticlesFace(): ParticlesFace | null {
+    return this.particlesFace
   }
 
   /**
@@ -323,10 +355,16 @@ export class Avatar {
     if (this.currentRenderer === 'blob-xyz') {
       this.blobXyz?.setRandomBlob()
     } else if (this.currentRenderer === 'black-hole') {
-      // Randomize black hole by changing color scheme
       const schemes: BlackHoleColorScheme[] = ['classic', 'fire', 'ice', 'nebula', 'void']
       const randomScheme = schemes[Math.floor(Math.random() * schemes.length)]
       this.blackHole?.setColorScheme(randomScheme as BlackHoleColorScheme)
+    } else if (this.currentRenderer === 'particles-face') {
+      const randomHue = Math.floor(Math.random() * 360)
+      const color = `hsl(${randomHue}, 80%, 75%)`
+      const secondaryHue = (randomHue + 60 + Math.floor(Math.random() * 120)) % 360
+      const secondaryColor = `hsl(${secondaryHue}, 70%, 60%)`
+      this.particlesFace?.setColor(color)
+      this.particlesFace?.setSecondaryColor(secondaryColor)
     }
   }
 
@@ -380,6 +418,7 @@ export class Avatar {
     this.resizeObserver?.disconnect()
     this.blobXyz?.dispose()
     this.blackHole?.dispose()
+    this.particlesFace?.dispose()
     this.audio.dispose()
     this.scene.dispose()
   }

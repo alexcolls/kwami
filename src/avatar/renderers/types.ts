@@ -9,7 +9,6 @@ export type { AvatarRenderer }
  * Blob-specific renderer interface
  */
 export interface BlobXyzRendererInterface extends AvatarRenderer {
-  // Blob-specific methods
   setColors(x: string, y: string, z: string): void
   setSpikes(x: number, y: number, z: number): void
   setAmplitude(x: number, y: number, z: number): void
@@ -22,12 +21,25 @@ export interface BlobXyzRendererInterface extends AvatarRenderer {
   setOpacity(opacity: number): void
   setSkin(skin: { skin: string; subtype?: string }): void
 
-  // Randomization
   randomize(): void
   resetToDefaults(): void
 
-  // Export
   exportGLTF(): void
+}
+
+/**
+ * Particles face renderer interface
+ */
+export interface ParticlesFaceRendererInterface extends AvatarRenderer {
+  setColor(color: string): void
+  setSecondaryColor(color: string): void
+  setParticleSize(size: number): void
+  setOpacity(opacity: number): void
+  setFaceScale(scale: number): void
+  setMouthAmplitude(amplitude: number): void
+  setSpeakingReactivity(reactivity: number): void
+  setScale(scale: number): void
+  setAudioLevels(bass: number, mid: number, high: number): void
 }
 
 /**

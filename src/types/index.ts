@@ -76,12 +76,13 @@ export interface KwamiCallbacks {
 // Avatar
 // -----------------------------------------------------------------------------
 
-export type AvatarRendererType = 'blob-xyz' | 'black-hole'
+export type AvatarRendererType = 'blob-xyz' | 'black-hole' | 'particles-face'
 
 export interface AvatarConfig {
   renderer?: AvatarRendererType
   blob?: BlobXyzConfig
   blackHole?: BlackHoleConfig
+  particlesFace?: ParticlesFaceConfig
   scene?: SceneConfig
   interaction?: InteractionConfig
   audio?: {
@@ -90,6 +91,26 @@ export interface AvatarConfig {
     autoInitialize?: boolean
     volume?: number
   }
+}
+
+export interface ParticlesFaceConfig {
+  particleCount?: number
+  particleSize?: number
+  faceScale?: number
+  color?: string
+  secondaryColor?: string
+  opacity?: number
+  mouthAmplitude?: number
+  breathingSpeed?: number
+  breathingAmplitude?: number
+  driftSpeed?: number
+  driftAmplitude?: number
+  speakingReactivity?: number
+  listeningPulse?: number
+  thinkingSpeed?: number
+  ambientParticles?: number
+  ambientRadius?: number
+  depthSpread?: number
 }
 
 export interface AudioConfig {
