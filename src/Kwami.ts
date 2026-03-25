@@ -330,6 +330,9 @@ export class Kwami {
    */
   registerTool(tool: Parameters<ToolRegistry['register']>[0]): void {
     this.tools.register(tool)
+    if (tool.handler) {
+      this.agent.registerTool(tool.name, tool.handler)
+    }
     if (this.isConnected()) {
       this.agent.syncConfigToBackend('tools', this.tools.getToolDefinitions())
     }
@@ -340,6 +343,7 @@ export class Kwami {
    */
   unregisterTool(name: string): void {
     this.tools.unregister(name)
+    this.agent.unregisterTool(name)
     if (this.isConnected()) {
       this.agent.syncConfigToBackend('tools', this.tools.getToolDefinitions())
     }

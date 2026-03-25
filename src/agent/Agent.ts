@@ -424,6 +424,14 @@ export class Agent {
   }
 
   /**
+   * Unregister a client-side tool so the backend can no longer invoke it.
+   */
+  unregisterTool(name: string): void {
+    this.clientTools.delete(name)
+    logger.info(`Unregistered client tool: ${name}`)
+  }
+
+  /**
    * Handle dynamic tool execution
    */
   private async handleToolExecution(name: string, args: Record<string, unknown>): Promise<string> {
