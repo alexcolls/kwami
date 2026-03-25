@@ -10,7 +10,7 @@ import type { KwamiAudio } from '../../audio/KwamiAudio'
  * The only skin is Tricolor, with 3 subtypes.
  */
 export type BlobXyzSkin = 'tricolor'
-export type TricolorSubtype = 'poles' | 'donut' | 'vintage'
+export type TricolorSubtype = 'poles' | 'donut' | 'vintage' | 'marble' | 'fresnel' | 'iridescent'
 
 /**
  * Skin selection (extensible discriminated union).
@@ -102,6 +102,9 @@ export interface BlobXyzOptionsConfig {
       poles: TricolorSkinConfig
       donut: TricolorSkinConfig
       vintage: TricolorSkinConfig
+      marble: TricolorSkinConfig
+      fresnel: TricolorSkinConfig
+      iridescent: TricolorSkinConfig
     }
   }
 }

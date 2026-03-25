@@ -129,7 +129,7 @@ export interface AvatarRenderer {
 // -----------------------------------------------------------------------------
 
 export type BlobXyzSkin = 'tricolor'
-export type TricolorSubtype = 'poles' | 'donut' | 'vintage'
+export type TricolorSubtype = 'poles' | 'donut' | 'vintage' | 'marble' | 'fresnel' | 'iridescent'
 
 export type BlobXyzSkinSelection = {
   skin: 'tricolor'

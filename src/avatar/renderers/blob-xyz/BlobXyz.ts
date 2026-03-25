@@ -196,9 +196,7 @@ export class BlobXyz {
    * Initialize all available skins
    */
   private initializeSkins(colorOverride?: { x: string; y: string; z: string }): void {
-    const polesConfig = this.config.skins.tricolor.poles
-    const donutConfig = this.config.skins.tricolor.donut
-    const vintageConfig = this.config.skins.tricolor.vintage
+    const subtypes = ['poles', 'donut', 'vintage', 'marble', 'fresnel', 'iridescent'] as const
 
     const getConfigWithColors = <T extends { color1: string; color2: string; color3: string }>(baseConfig: T) => {
       if (colorOverride) {
@@ -212,17 +210,12 @@ export class BlobXyz {
       return baseConfig
     }
 
-    const polesMaterial = createSkin({ skin: 'tricolor', subtype: 'poles' }, getConfigWithColors(polesConfig))
-    this.applyBackgroundTextureToMaterial(polesMaterial)
-    this.skins.set('poles', polesMaterial)
-
-    const donutMaterial = createSkin({ skin: 'tricolor', subtype: 'donut' }, getConfigWithColors(donutConfig))
-    this.applyBackgroundTextureToMaterial(donutMaterial)
-    this.skins.set('donut', donutMaterial)
-
-    const vintageMaterial = createSkin({ skin: 'tricolor', subtype: 'vintage' }, getConfigWithColors(vintageConfig))
-    this.applyBackgroundTextureToMaterial(vintageMaterial)
-    this.skins.set('vintage', vintageMaterial)
+    for (const subtype of subtypes) {
+      const baseConfig = this.config.skins.tricolor[subtype]
+      const material = createSkin({ skin: 'tricolor', subtype }, getConfigWithColors(baseConfig))
+      this.applyBackgroundTextureToMaterial(material)
+      this.skins.set(subtype, material)
+    }
   }
 
   private applyBackgroundTextureToMaterial(material: ShaderMaterial): void {
