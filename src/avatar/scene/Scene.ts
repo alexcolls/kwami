@@ -78,6 +78,8 @@ export class Scene {
     if (config.fieldRadius !== undefined) this.starField.setFieldRadius(config.fieldRadius)
     if (config.twinkleSpeed !== undefined) this.starField.setTwinkleSpeed(config.twinkleSpeed)
     if (config.rotationSpeed !== undefined) this.starField.setRotationSpeed(config.rotationSpeed)
+    if (config.minSize !== undefined) this.starField.setMinSize(config.minSize)
+    if (config.maxSize !== undefined) this.starField.setMaxSize(config.maxSize)
   }
 
   /**

@@ -15,7 +15,7 @@ import {
 } from 'three'
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js'
 import { createBlobXyzGeometry } from './geometry'
-import { animateBlobXyz } from './animation'
+import { animateBlobXyz, type LiquidPhysics } from './animation'
 import { createSkin } from './skins'
 import { defaultBlobXyzConfig } from './config'
 import { BlobXyzPosition } from './position'
@@ -94,6 +94,13 @@ export class BlobXyz {
   public amplitude = { x: 0.8, y: 0.8, z: 0.8 }
   public time = { x: 1, y: 1, z: 1 }
   public rotation = { x: 0, y: 0, z: 0 }
+
+  // Liquid physics velocity tracking
+  private prevMeshX = 0
+  private prevMeshY = 0
+  private smoothVelocityX = 0
+  private smoothVelocityY = 0
+  private liquidPhysics: LiquidPhysics = { velocityX: 0, velocityY: 0, stretch: 0.6 }
 
   // Audio effect parameters
   public audioEffects: BlobXyzAudioEffects = {
@@ -308,6 +315,18 @@ export class BlobXyz {
         this.thinkingTransition = Math.max(0, this.thinkingTransition - this.transitionSpeed)
       }
 
+      const currentX = this.mesh.position.x
+      const currentY = this.mesh.position.y
+      const rawVX = currentX - this.prevMeshX
+      const rawVY = currentY - this.prevMeshY
+      const smoothing = 0.15
+      this.smoothVelocityX += (rawVX - this.smoothVelocityX) * smoothing
+      this.smoothVelocityY += (rawVY - this.smoothVelocityY) * smoothing
+      this.liquidPhysics.velocityX = this.smoothVelocityX
+      this.liquidPhysics.velocityY = this.smoothVelocityY
+      this.prevMeshX = currentX
+      this.prevMeshY = currentY
+
       const analyser = this.options.audio.getAnalyser()
       if (analyser) {
         const frequencyData = this.options.audio.getFrequencyData() as Uint8Array<ArrayBuffer>
@@ -335,13 +354,13 @@ export class BlobXyz {
           this.thinkingTransition,
           thinkingProgress,
           this.audioEffects,
+          this.liquidPhysics,
         )
 
-        if (!audioDriven) {
-          this.mesh.rotation.x += this.rotation.x
-          this.mesh.rotation.y += this.rotation.y
-          this.mesh.rotation.z += this.rotation.z
-        }
+        const rotationScale = audioDriven ? 0.4 : 1
+        this.mesh.rotation.x += this.rotation.x * rotationScale
+        this.mesh.rotation.y += this.rotation.y * rotationScale
+        this.mesh.rotation.z += this.rotation.z * rotationScale
       } else {
         this.mesh.rotation.x += this.rotation.x
         this.mesh.rotation.y += this.rotation.y
