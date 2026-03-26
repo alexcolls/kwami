@@ -5,20 +5,18 @@ import type { KwamiAudio } from '../../audio/KwamiAudio'
 // BLOB TYPES
 // =============================================================================
 
-/**
- * Blob skin system
- * The only skin is Tricolor, with 3 subtypes.
- */
-export type BlobXyzSkin = 'tricolor'
-export type TricolorSubtype = 'poles' | 'donut' | 'vintage' | 'marble' | 'fresnel' | 'iridescent'
+export type BlobXyzSkin = 'tricolor' | 'monochrome' | 'matcap' | 'toon'
+export type TricolorSubtype = 'poles' | 'donut' | 'vintage' | 'marble' | 'fresnel' | 'iridescent' | 'spiral' | 'plasma' | 'gradient'
+export type MonochromeSubtype = 'matte' | 'glossy' | 'metallic' | 'subsurface'
+export type MatcapSubtype = 'chrome' | 'clay' | 'jade' | 'toon-matcap' | 'hologram'
+export type ToonSubtype = 'flat' | 'stepped' | 'halftone' | 'outlined'
+export type AnySkinSubtype = TricolorSubtype | MonochromeSubtype | MatcapSubtype | ToonSubtype
 
-/**
- * Skin selection (extensible discriminated union).
- */
-export type BlobXyzSkinSelection = {
-  skin: 'tricolor'
-  subtype?: TricolorSubtype
-}
+export type BlobXyzSkinSelection =
+  | { skin: 'tricolor'; subtype?: TricolorSubtype }
+  | { skin: 'monochrome'; subtype?: MonochromeSubtype }
+  | { skin: 'matcap'; subtype?: MatcapSubtype }
+  | { skin: 'toon'; subtype?: ToonSubtype }
 
 /**
  * Tricolor skin configuration
@@ -98,14 +96,10 @@ export interface BlobXyzOptionsConfig {
     step: number
   }
   skins: {
-    tricolor: {
-      poles: TricolorSkinConfig
-      donut: TricolorSkinConfig
-      vintage: TricolorSkinConfig
-      marble: TricolorSkinConfig
-      fresnel: TricolorSkinConfig
-      iridescent: TricolorSkinConfig
-    }
+    tricolor: Record<TricolorSubtype, TricolorSkinConfig>
+    monochrome: Record<MonochromeSubtype, TricolorSkinConfig>
+    matcap: Record<MatcapSubtype, TricolorSkinConfig>
+    toon: Record<ToonSubtype, TricolorSkinConfig>
   }
 }
 
