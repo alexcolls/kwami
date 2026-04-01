@@ -104,15 +104,15 @@ export class BlobXyz {
   // Audio effect parameters
   public audioEffects: BlobXyzAudioEffects = {
     bassSpike: 0.55,
-    midSpike: 0.65,
+    midSpike: 0.58,
     highSpike: 0.35,
     enabled: true,
-    reactivity: 1.8,
+    reactivity: 1.45,
     sensitivity: 0.075,
     breathing: 0.035,
     responseSpeed: 0.65,
-    transientBoost: 0.35,
-    spikeDensity: 1.5,
+    transientBoost: 0.24,
+    spikeDensity: 1.18,
     rotateWhilePlaying: true,
   }
   public colors = { x: '#ff0000', y: '#00ff00', z: '#0000ff' }

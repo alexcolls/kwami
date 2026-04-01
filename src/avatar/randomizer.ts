@@ -202,20 +202,20 @@ export function randomBlobTouch() {
 export function randomBlobAudio() {
   return {
     enabled: Math.random() > 0.1,
-    reactivity: randomInRange(1.0, 3.0, 0.1),
-    sensitivity: randomInRange(0.03, 0.12, 0.005),
-    responseSpeed: randomInRange(0.3, 0.85, 0.05),
-    transientBoost: randomInRange(0.2, 0.7, 0.05),
-    spikeDensity: randomInRange(0.5, 2.5, 0.1),
+    reactivity: randomInRange(0.95, 1.85, 0.05),
+    sensitivity: randomInRange(0.04, 0.11, 0.005),
+    responseSpeed: randomInRange(0.35, 0.75, 0.05),
+    transientBoost: randomInRange(0.12, 0.38, 0.02),
+    spikeDensity: randomInRange(0.65, 1.45, 0.05),
     rotateWhilePlaying: Math.random() > 0.5,
   }
 }
 
 export function randomBlobFrequencyBands() {
   return {
-    bass: randomInRange(0.3, 1.5, 0.05),
-    mid: randomInRange(0.2, 1.2, 0.05),
-    high: randomInRange(0.1, 1.0, 0.05),
+    bass: randomInRange(0.35, 1.1, 0.05),
+    mid: randomInRange(0.25, 0.95, 0.05),
+    high: randomInRange(0.1, 0.7, 0.05),
   }
 }
 
