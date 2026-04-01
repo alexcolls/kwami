@@ -67,6 +67,30 @@ export {
   filterPresetVoices,
 } from './voice/types'
 
+// Voice UI catalogs
+export {
+  VOICE_STT_PROVIDERS,
+  VOICE_LLM_PROVIDERS,
+  VOICE_TTS_PROVIDERS,
+  VOICE_REALTIME_PROVIDERS,
+  VOICE_STT_MODELS,
+  VOICE_LLM_MODELS,
+  VOICE_TTS_MODELS,
+  VOICE_REALTIME_MODELS,
+  VOICE_FALLBACK_STT_LANGUAGES,
+  VOICE_FALLBACK_TTS_VOICES,
+  VOICE_FALLBACK_REALTIME_VOICES,
+  VOICE_UI_PRESETS,
+} from './voice/catalog'
+
+export type {
+  VoiceProviderOption,
+  VoiceModelOption,
+  VoiceOption,
+  LanguageOption,
+  VoicePipelineUiPreset,
+} from './voice/catalog'
+
 // Pipeline types
 export type {
   VoicePipelineConfig as LegacyVoicePipelineConfig,
