@@ -75,6 +75,21 @@ export {
   filterPresetVoices,
 } from './agent'
 
+export {
+  VOICE_STT_PROVIDERS,
+  VOICE_LLM_PROVIDERS,
+  VOICE_TTS_PROVIDERS,
+  VOICE_REALTIME_PROVIDERS,
+  VOICE_STT_MODELS,
+  VOICE_LLM_MODELS,
+  VOICE_TTS_MODELS,
+  VOICE_REALTIME_MODELS,
+  VOICE_FALLBACK_STT_LANGUAGES,
+  VOICE_FALLBACK_TTS_VOICES,
+  VOICE_FALLBACK_REALTIME_VOICES,
+  VOICE_UI_PRESETS,
+} from './agent'
+
 // Core Types
 export type {
   // Core
@@ -127,6 +142,15 @@ export type {
   SkillResult,
 } from './types'
 
+export {
+  soulPresets,
+  soulPresetCategories,
+  getSoulPresetById,
+  getSoulPresetsByCategory,
+  toSoulConfig,
+} from './soul'
+export type { SoulPreset } from './soul'
+
 // Re-export blob-specific types
 export type {
   BlobXyzOptions,
@@ -134,6 +158,37 @@ export type {
   TricolorSkinConfig,
   BlobXyzAudioEffects,
 } from './avatar/renderers/blob-xyz/types'
+
+export {
+  avatarBlobPresets,
+  avatarBlackHolePresets,
+  blobSkinSelectionFromSubtype,
+  BLOB_SKIN_FAMILIES,
+  ALL_BLOB_SKIN_TYPES,
+  randomBlobSkinType,
+  randomBlobColors,
+  randomBlobSurface,
+  randomBlobScale,
+  randomBlobVector3Degrees,
+  randomBlobSpikes,
+  randomBlobAmplitude,
+  randomBlobTime,
+  randomBlobRotation,
+  randomBlobBreathing,
+  randomBlobTouch,
+  randomBlobAudio,
+  randomBlobFrequencyBands,
+  randomizeBlobState,
+} from './avatar'
+
+export type {
+  AvatarBlobPreset,
+  AvatarBlackHolePreset,
+  BlobPresetState,
+  BlackHolePresetState,
+  BlobSkinSubtype,
+  BlobRandomizerState,
+} from './avatar'
 
 // Adapter types
 export type { LiveKitAdapterConfig, AgentAdapter, AdapterFactory } from './agent'
