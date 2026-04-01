@@ -1,5 +1,6 @@
 import type { SoulConfig, EmotionalTraits, MemoryContext } from '../types'
 import { logger } from '../utils/logger'
+import { getSoulPresetById, toSoulConfig } from './presets'
 
 /**
  * Soul - Manages the AI's personality and identity
@@ -240,8 +241,18 @@ export class Soul {
    * Load soul from a template name
    */
   loadTemplate(templateName: string): void {
-    // TODO: Implement template loading
-    logger.info(`Loading template: ${templateName}`)
+    const normalized = templateName.trim().toLowerCase()
+    const preset =
+      getSoulPresetById(normalized) ??
+      getSoulPresetById(normalized.replace(/\s+/g, '-'))
+
+    if (!preset) {
+      logger.warn(`Unknown soul template: ${templateName}`)
+      return
+    }
+
+    this.updateConfig(toSoulConfig(preset))
+    logger.info(`Loaded soul template: ${preset.id}`)
   }
 
   /**
