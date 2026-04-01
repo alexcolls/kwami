@@ -110,14 +110,12 @@ export interface BlobXyzAudioEffects {
   bassSpike: number
   midSpike: number
   highSpike: number
-  midTime: number
-  highTime: number
-  ultraTime: number
   enabled: boolean
-  timeEnabled: boolean
   reactivity?: number
   sensitivity?: number
   breathing?: number
   responseSpeed?: number
   transientBoost?: number
+  spikeDensity?: number
+  rotateWhilePlaying?: boolean
 }

@@ -104,19 +104,17 @@ export class BlobXyz {
 
   // Audio effect parameters
   public audioEffects: BlobXyzAudioEffects = {
-    bassSpike: 0.65,
-    midSpike: 0.5,
-    highSpike: 0.38,
-    midTime: 0.1,
-    highTime: 0.18,
-    ultraTime: 0.08,
+    bassSpike: 0.55,
+    midSpike: 0.65,
+    highSpike: 0.35,
     enabled: true,
-    timeEnabled: false,
-    reactivity: 1.9,
+    reactivity: 1.8,
     sensitivity: 0.075,
     breathing: 0.035,
-    responseSpeed: 0.75,
-    transientBoost: 0.5,
+    responseSpeed: 0.65,
+    transientBoost: 0.35,
+    spikeDensity: 1.5,
+    rotateWhilePlaying: true,
   }
   public colors = { x: '#ff0000', y: '#00ff00', z: '#0000ff' }
   public opacity = 1
@@ -365,7 +363,8 @@ export class BlobXyz {
           this.liquidPhysics,
         )
 
-        const rotationScale = audioDriven ? 0.4 : 1
+        const keepRotating = this.audioEffects.rotateWhilePlaying ?? true
+        const rotationScale = audioDriven && !keepRotating ? 0 : audioDriven ? 0.4 : 1
         this.mesh.rotation.x += this.rotation.x * rotationScale
         this.mesh.rotation.y += this.rotation.y * rotationScale
         this.mesh.rotation.z += this.rotation.z * rotationScale
