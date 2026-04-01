@@ -5,18 +5,11 @@ import type { KwamiAudio } from '../../audio/KwamiAudio'
 // BLOB TYPES
 // =============================================================================
 
-export type BlobXyzSkin = 'tricolor' | 'monochrome' | 'matcap' | 'toon'
-export type TricolorSubtype = 'poles' | 'donut' | 'vintage' | 'marble' | 'fresnel' | 'iridescent' | 'spiral' | 'plasma' | 'gradient'
-export type MonochromeSubtype = 'matte' | 'glossy' | 'metallic' | 'subsurface'
-export type MatcapSubtype = 'chrome' | 'clay' | 'jade' | 'toon-matcap' | 'hologram'
-export type ToonSubtype = 'flat' | 'stepped' | 'halftone' | 'outlined'
-export type AnySkinSubtype = TricolorSubtype | MonochromeSubtype | MatcapSubtype | ToonSubtype
-
-export type BlobXyzSkinSelection =
-  | { skin: 'tricolor'; subtype?: TricolorSubtype }
-  | { skin: 'monochrome'; subtype?: MonochromeSubtype }
-  | { skin: 'matcap'; subtype?: MatcapSubtype }
-  | { skin: 'toon'; subtype?: ToonSubtype }
+export type BlobXyzSkin =
+  | 'radial' | 'banded' | 'striped' | 'marble' | 'fresnel' | 'iridescent' | 'spiral' | 'plasma' | 'gradient'
+  | 'matte' | 'glossy' | 'metallic' | 'subsurface'
+  | 'chrome' | 'clay' | 'jade' | 'toon-matcap' | 'hologram'
+  | 'flat' | 'stepped' | 'halftone' | 'outlined'
 
 /**
  * Tricolor skin configuration
@@ -35,7 +28,7 @@ export interface TricolorSkinConfig {
  * Blob configuration options
  */
 export interface BlobXyzConfig {
-  skin?: BlobXyzSkinSelection
+  skin?: BlobXyzSkin
   resolution?: number
   spikes?: { x: number; y: number; z: number }
   time?: { x: number; y: number; z: number }
@@ -55,7 +48,7 @@ export interface BlobXyzOptions {
   renderer: WebGLRenderer
   audio: KwamiAudio
 
-  skin?: BlobXyzSkinSelection
+  skin?: BlobXyzSkin
   resolution?: number
   spikes?: { x: number; y: number; z: number }
   time?: { x: number; y: number; z: number }
@@ -96,10 +89,7 @@ export interface BlobXyzOptionsConfig {
     step: number
   }
   skins: {
-    tricolor: Record<TricolorSubtype, TricolorSkinConfig>
-    monochrome: Record<MonochromeSubtype, TricolorSkinConfig>
-    matcap: Record<MatcapSubtype, TricolorSkinConfig>
-    toon: Record<ToonSubtype, TricolorSkinConfig>
+    presets: Record<BlobXyzSkin, TricolorSkinConfig>
   }
 }
 

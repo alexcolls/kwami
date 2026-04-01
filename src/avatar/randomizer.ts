@@ -1,14 +1,55 @@
 import { getRandomHexColor } from '../utils/randoms'
-import type { BlobSkinSubtype } from './presets'
+import type { BlobSkinType } from './presets'
 
-export const BLOB_SKIN_FAMILIES = {
-  tricolor: ['poles', 'donut', 'vintage', 'marble', 'fresnel', 'iridescent', 'spiral', 'plasma', 'gradient'],
-  monochrome: ['matte', 'glossy', 'metallic', 'subsurface'],
-  matcap: ['chrome', 'clay', 'jade', 'toon-matcap', 'hologram'],
-  toon: ['flat', 'stepped', 'halftone', 'outlined'],
-} as const
+export const BLOB_SKINS: readonly BlobSkinType[] = [
+  'radial',
+  'banded',
+  'striped',
+  'marble',
+  'fresnel',
+  'iridescent',
+  'spiral',
+  'plasma',
+  'gradient',
+  'matte',
+  'glossy',
+  'metallic',
+  'subsurface',
+  'chrome',
+  'clay',
+  'jade',
+  'toon-matcap',
+  'hologram',
+  'flat',
+  'stepped',
+  'halftone',
+  'outlined',
+] as const
 
-export const ALL_BLOB_SKIN_TYPES: BlobSkinSubtype[] = Object.values(BLOB_SKIN_FAMILIES).flat() as BlobSkinSubtype[]
+export const BLOB_SKIN_LABELS: Record<BlobSkinType, string> = {
+  radial: 'Radial',
+  banded: 'Banded',
+  striped: 'Striped',
+  marble: 'Veined Marble',
+  fresnel: 'Edge Glow',
+  iridescent: 'Prism Shift',
+  spiral: 'Vortex',
+  plasma: 'Plasma Storm',
+  gradient: 'Soft Blend',
+  matte: 'Matte',
+  glossy: 'Gloss',
+  metallic: 'Metal',
+  subsurface: 'Soft Scatter',
+  chrome: 'Chrome',
+  clay: 'Clay',
+  jade: 'Jade',
+  'toon-matcap': 'Toon Shine',
+  hologram: 'Hologram',
+  flat: 'Flat',
+  stepped: 'Stepped',
+  halftone: 'Halftone',
+  outlined: 'Outlined',
+}
 
 function randomInRange(min: number, max: number, step = 0.01): number {
   const range = (max - min) / step
@@ -21,7 +62,7 @@ function pick<T>(items: readonly T[]): T {
 
 export interface BlobRandomizerState {
   skin: {
-    type: BlobSkinSubtype
+    type: BlobSkinType
     colors: { x: string; y: string; z: string }
     opacity: number
     shininess: number
@@ -56,8 +97,8 @@ export interface BlobRandomizerState {
   }
 }
 
-export function randomBlobSkinType(): BlobSkinSubtype {
-  return pick(ALL_BLOB_SKIN_TYPES)
+export function randomBlobSkinType(): BlobSkinType {
+  return pick(BLOB_SKINS)
 }
 
 export function randomBlobColors() {
@@ -130,14 +171,19 @@ export function randomBlobTime(linked = false) {
 }
 
 export function randomBlobRotation(linked = false) {
+  const disabled = Math.random() < 0.5
+  if (disabled) {
+    return { x: 0, y: 0, z: 0 }
+  }
+
   if (linked) {
-    const value = randomInRange(0, 0.01, 0.001)
+    const value = randomInRange(0.001, 0.004, 0.001)
     return { x: value, y: value, z: value }
   }
   return {
-    x: randomInRange(0, 0.01, 0.001),
-    y: randomInRange(0, 0.01, 0.001),
-    z: randomInRange(0, 0.01, 0.001),
+    x: randomInRange(0.001, 0.004, 0.001),
+    y: randomInRange(0.001, 0.004, 0.001),
+    z: randomInRange(0.001, 0.004, 0.001),
   }
 }
 

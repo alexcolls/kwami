@@ -1,5 +1,5 @@
 import type { AvatarConfig, AvatarRendererType, KwamiState, BlackHoleColorScheme } from '../types'
-import type { BlobXyzSkinSelection } from './renderers/blob-xyz/types'
+import type { BlobXyzSkin } from './renderers/blob-xyz/types'
 import { Scene } from './scene'
 import { BlobXyz } from './renderers/blob-xyz'
 import { BlackHole } from './renderers/black-hole'
@@ -295,8 +295,8 @@ export class Avatar {
   /**
    * Set blob skin
    */
-  setSkin(selection: BlobXyzSkinSelection): void {
-    this.blobXyz?.setSkin(selection)
+  setSkin(skin: BlobXyzSkin): void {
+    this.blobXyz?.setSkin(skin)
   }
 
   /**

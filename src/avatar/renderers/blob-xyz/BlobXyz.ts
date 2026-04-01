@@ -25,7 +25,7 @@ import {
   getRandomHexColor,
   genDNA,
 } from '../../../utils/randoms'
-import type { BlobXyzOptions, BlobXyzSkinSelection, BlobXyzAudioEffects, AnySkinSubtype, TricolorSkinConfig } from './types'
+import type { BlobXyzOptions, BlobXyzSkin, BlobXyzAudioEffects, TricolorSkinConfig } from './types'
 import { logger } from '../../../utils/logger'
 
 
@@ -36,9 +36,8 @@ import { logger } from '../../../utils/logger'
 export class BlobXyz {
   private mesh: Mesh
   private config = defaultBlobXyzConfig
-  public currentSkin: BlobXyzSkinSelection
-  public currentSkinSubtype: AnySkinSubtype
-  private skins: Map<AnySkinSubtype, ShaderMaterial> = new Map()
+  public currentSkin: BlobXyzSkin
+  private skins: Map<BlobXyzSkin, ShaderMaterial> = new Map()
 
   private animationFrameId: number | null = null
 
@@ -127,15 +126,12 @@ export class BlobXyz {
   public position: BlobXyzPosition
 
   constructor(private options: BlobXyzOptions) {
-    const selection: BlobXyzSkinSelection = options.skin ?? { skin: 'tricolor', subtype: 'poles' }
-    const subtype: AnySkinSubtype = (selection.subtype ?? 'poles') as AnySkinSubtype
-
-    this.currentSkin = selection
-    this.currentSkinSubtype = subtype
+    const skin: BlobXyzSkin = options.skin ?? 'radial'
+    this.currentSkin = skin
 
     this.initializeSkins(options.colors)
 
-    const activeSkinConfig = this.getSkinConfig(selection.skin, subtype)
+    const activeSkinConfig = this.getSkinConfig(skin)
 
     if (options.colors) {
       this.colors = {
@@ -158,7 +154,10 @@ export class BlobXyz {
       options.resolution || this.config.resolution.default,
     )
 
-    const material = this.skins.get(this.currentSkinSubtype)!
+    const material = this.skins.get(this.currentSkin) ?? this.skins.get('radial')
+    if (!material) {
+      throw new Error('No blob skin materials available')
+    }
     this.mesh = new Mesh(geometry, material)
     this.updateMaterialOpacity(this.opacity)
     this.updateLightIntensityUniforms()
@@ -193,21 +192,19 @@ export class BlobXyz {
   /**
    * Initialize all available skins
    */
-  private getSkinConfig(family: string, subtype: AnySkinSubtype): TricolorSkinConfig {
-    const familyConfigs = this.config.skins[family as keyof typeof this.config.skins]
-    if (familyConfigs && subtype in familyConfigs) {
-      return (familyConfigs as Record<string, TricolorSkinConfig>)[subtype]
-    }
-    return this.config.skins.tricolor.poles
+  private getSkinConfig(skin: BlobXyzSkin): TricolorSkinConfig {
+    const cfg = this.config.skins.presets[skin]
+    if (cfg) return cfg
+    return this.config.skins.presets.radial
   }
 
   private initializeSkins(colorOverride?: { x: string; y: string; z: string }): void {
-    const families = [
-      { skin: 'tricolor' as const, subtypes: ['poles', 'donut', 'vintage', 'marble', 'fresnel', 'iridescent', 'spiral', 'plasma', 'gradient'] },
-      { skin: 'monochrome' as const, subtypes: ['matte', 'glossy', 'metallic', 'subsurface'] },
-      { skin: 'matcap' as const, subtypes: ['chrome', 'clay', 'jade', 'toon-matcap', 'hologram'] },
-      { skin: 'toon' as const, subtypes: ['flat', 'stepped', 'halftone', 'outlined'] },
-    ] as const
+    const skins: BlobXyzSkin[] = [
+      'radial', 'banded', 'striped', 'marble', 'fresnel', 'iridescent', 'spiral', 'plasma', 'gradient',
+      'matte', 'glossy', 'metallic', 'subsurface',
+      'chrome', 'clay', 'jade', 'toon-matcap', 'hologram',
+      'flat', 'stepped', 'halftone', 'outlined',
+    ]
 
     const getConfigWithColors = <T extends { color1: string; color2: string; color3: string }>(baseConfig: T) => {
       if (colorOverride) {
@@ -221,13 +218,11 @@ export class BlobXyz {
       return baseConfig
     }
 
-    for (const family of families) {
-      for (const subtype of family.subtypes) {
-        const baseConfig = this.getSkinConfig(family.skin, subtype as AnySkinSubtype)
-        const material = createSkin({ skin: family.skin, subtype } as BlobXyzSkinSelection, getConfigWithColors(baseConfig))
-        this.applyBackgroundTextureToMaterial(material)
-        this.skins.set(subtype as AnySkinSubtype, material)
-      }
+    for (const skin of skins) {
+      const baseConfig = this.getSkinConfig(skin)
+      const material = createSkin(skin, getConfigWithColors(baseConfig))
+      this.applyBackgroundTextureToMaterial(material)
+      this.skins.set(skin, material)
     }
   }
 
@@ -414,17 +409,15 @@ export class BlobXyz {
   /**
    * Change the blob's skin
    */
-  setSkin(selection: BlobXyzSkinSelection): void {
-    const subtype = (selection.subtype ?? 'poles') as AnySkinSubtype
-    const material = this.skins.get(subtype)
+  setSkin(skin: BlobXyzSkin): void {
+    const material = this.skins.get(skin)
 
     if (material) {
       const currentMaterial = this.mesh.material as ShaderMaterial
       const currentShininess = currentMaterial.uniforms?.shininess?.value || 50
       const currentWireframe = currentMaterial.wireframe
 
-      this.currentSkin = selection
-      this.currentSkinSubtype = subtype
+      this.currentSkin = skin
       this.mesh.material = material
       this.applyBackgroundTextureToMaterial(material)
 
@@ -450,12 +443,12 @@ export class BlobXyz {
   /**
    * Get current skin type
    */
-  getCurrentSkin(): BlobXyzSkinSelection {
+  getCurrentSkin(): BlobXyzSkin {
     return this.currentSkin
   }
 
-  getCurrentSkinSubtype(): AnySkinSubtype {
-    return this.currentSkinSubtype
+  getCurrentSkinType(): BlobXyzSkin {
+    return this.currentSkin
   }
 
   /**

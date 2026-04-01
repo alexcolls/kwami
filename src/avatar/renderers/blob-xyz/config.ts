@@ -31,8 +31,8 @@ export const defaultBlobXyzConfig: BlobXyzOptionsConfig = {
     step: 1,
   },
   skins: {
-    tricolor: {
-      poles: {
+    presets: {
+      radial: {
         wireframe: getRandomBoolean(0.1),
         lightPosition: { x: 1000, y: 2500, z: 200 },
         shininess: 50,
@@ -41,7 +41,7 @@ export const defaultBlobXyzConfig: BlobXyzOptionsConfig = {
         color3: getRandomHexColor(),
         opacity: 1,
       },
-      donut: {
+      banded: {
         wireframe: getRandomBoolean(0.1),
         lightPosition: { x: 800, y: 2200, z: 300 },
         shininess: 45,
@@ -50,7 +50,7 @@ export const defaultBlobXyzConfig: BlobXyzOptionsConfig = {
         color3: getRandomHexColor(),
         opacity: 1,
       },
-      vintage: {
+      striped: {
         wireframe: false,
         lightPosition: { x: 0, y: 500, z: 200 },
         shininess: 50,
@@ -113,8 +113,6 @@ export const defaultBlobXyzConfig: BlobXyzOptionsConfig = {
         color3: getRandomHexColor(),
         opacity: 1,
       },
-    },
-    monochrome: {
       matte: {
         wireframe: false,
         lightPosition: { x: 800, y: 2000, z: 400 },
@@ -151,8 +149,6 @@ export const defaultBlobXyzConfig: BlobXyzOptionsConfig = {
         color3: '#ff7675',
         opacity: 0.92,
       },
-    },
-    matcap: {
       chrome: {
         wireframe: false,
         lightPosition: { x: 1000, y: 2500, z: 200 },
@@ -198,8 +194,6 @@ export const defaultBlobXyzConfig: BlobXyzOptionsConfig = {
         color3: '#00cec9',
         opacity: 0.85,
       },
-    },
-    toon: {
       flat: {
         wireframe: false,
         lightPosition: { x: 800, y: 2500, z: 200 },

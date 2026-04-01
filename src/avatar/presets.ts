@@ -1,14 +1,12 @@
-import type { BlobXyzSkinSelection } from './renderers/blob-xyz'
-
-export type BlobSkinSubtype =
-  | 'poles' | 'donut' | 'vintage' | 'marble' | 'fresnel' | 'iridescent' | 'spiral' | 'plasma' | 'gradient'
+export type BlobSkinType =
+  | 'radial' | 'banded' | 'striped' | 'marble' | 'fresnel' | 'iridescent' | 'spiral' | 'plasma' | 'gradient'
   | 'matte' | 'glossy' | 'metallic' | 'subsurface'
   | 'chrome' | 'clay' | 'jade' | 'toon-matcap' | 'hologram'
   | 'flat' | 'stepped' | 'halftone' | 'outlined'
 
 export interface BlobPresetState {
   skin: {
-    type: BlobSkinSubtype
+    type: BlobSkinType
     colors: { x: string; y: string; z: string }
     opacity: number
     shininess: number
@@ -67,19 +65,6 @@ export interface AvatarBlackHolePreset {
   blackHole: Partial<BlackHolePresetState>
 }
 
-const BLOB_SKIN_FAMILY_MAP: Record<string, 'tricolor' | 'monochrome' | 'matcap' | 'toon'> = {
-  poles: 'tricolor', donut: 'tricolor', vintage: 'tricolor', marble: 'tricolor',
-  fresnel: 'tricolor', iridescent: 'tricolor', spiral: 'tricolor', plasma: 'tricolor', gradient: 'tricolor',
-  matte: 'monochrome', glossy: 'monochrome', metallic: 'monochrome', subsurface: 'monochrome',
-  chrome: 'matcap', clay: 'matcap', jade: 'matcap', 'toon-matcap': 'matcap', hologram: 'matcap',
-  flat: 'toon', stepped: 'toon', halftone: 'toon', outlined: 'toon',
-}
-
-export function blobSkinSelectionFromSubtype(subtype: string): BlobXyzSkinSelection {
-  const family = BLOB_SKIN_FAMILY_MAP[subtype] ?? 'tricolor'
-  return { skin: family, subtype } as BlobXyzSkinSelection
-}
-
 export const avatarBlobPresets: AvatarBlobPreset[] = [
   {
     id: 'rgb-pulse',
@@ -87,7 +72,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:lightning-duotone',
     blob: {
       skin: {
-        type: 'poles',
+        type: 'radial',
         colors: { x: '#ff0066', y: '#00ff66', z: '#6600ff' },
         opacity: 1,
         shininess: 80,
@@ -120,7 +105,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:waves-duotone',
     blob: {
       skin: {
-        type: 'donut',
+        type: 'banded',
         colors: { x: '#0077be', y: '#00d4ff', z: '#001a33' },
         opacity: 0.85,
         shininess: 120,
@@ -153,7 +138,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:sun-horizon-duotone',
     blob: {
       skin: {
-        type: 'poles',
+        type: 'radial',
         colors: { x: '#ff6b35', y: '#f7c59f', z: '#8b1e3f' },
         opacity: 0.33,
         shininess: 200,
@@ -186,7 +171,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:star-duotone',
     blob: {
       skin: {
-        type: 'poles',
+        type: 'radial',
         colors: { x: '#00ff87', y: '#60efff', z: '#7b2cbf' },
         opacity: 0.95,
         shininess: 100,
@@ -219,7 +204,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:fire-simple-duotone',
     blob: {
       skin: {
-        type: 'donut',
+        type: 'banded',
         colors: { x: '#ff4500', y: '#ff8c00', z: '#8b0000' },
         opacity: 1,
         shininess: 30,
@@ -252,7 +237,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:cloud-duotone',
     blob: {
       skin: {
-        type: 'donut',
+        type: 'banded',
         colors: { x: '#ffb6c1', y: '#87ceeb', z: '#dda0dd' },
         opacity: 0.15,
         shininess: 176,
@@ -285,7 +270,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:moon-duotone',
     blob: {
       skin: {
-        type: 'poles',
+        type: 'radial',
         colors: { x: '#1a1a2e', y: '#16213e', z: '#0f3460' },
         opacity: 1,
         shininess: 0,
@@ -318,7 +303,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:skull-duotone',
     blob: {
       skin: {
-        type: 'vintage',
+        type: 'striped',
         colors: { x: '#39ff14', y: '#16bb16', z: '#32cd32' },
         opacity: 0.7,
         shininess: 60,
@@ -351,7 +336,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:crown-duotone',
     blob: {
       skin: {
-        type: 'donut',
+        type: 'banded',
         colors: { x: '#ffd700', y: '#daa520', z: '#b8860b' },
         opacity: 1,
         shininess: 200,
@@ -384,7 +369,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:snowflake-duotone',
     blob: {
       skin: {
-        type: 'poles',
+        type: 'radial',
         colors: { x: '#e0ffff', y: '#add8e6', z: '#87ceeb' },
         opacity: 1,
         shininess: 180,
@@ -417,7 +402,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:tree-duotone',
     blob: {
       skin: {
-        type: 'donut',
+        type: 'banded',
         colors: { x: '#228b22', y: '#006400', z: '#8fbc8f' },
         opacity: 1,
         shininess: 40,
@@ -450,7 +435,7 @@ export const avatarBlobPresets: AvatarBlobPreset[] = [
     icon: 'ph:planet-duotone',
     blob: {
       skin: {
-        type: 'poles',
+        type: 'radial',
         colors: { x: '#663399', y: '#ff1493', z: '#00ced1' },
         opacity: 0.9,
         shininess: 100,

@@ -21,12 +21,12 @@ import { createFlatSkin } from './flat'
 import { createSteppedSkin } from './stepped'
 import { createHalftoneSkin } from './halftone'
 import { createOutlinedSkin } from './outlined'
-import type { BlobXyzSkinSelection, TricolorSkinConfig, AnySkinSubtype } from '../types'
+import type { BlobXyzSkin, TricolorSkinConfig } from '../types'
 
-const skinFactories: Record<AnySkinSubtype, (config: TricolorSkinConfig) => ShaderMaterial> = {
-  poles: createPolesSkin,
-  donut: createDonutSkin,
-  vintage: createVintageSkin,
+const skinFactories: Record<BlobXyzSkin, (config: TricolorSkinConfig) => ShaderMaterial> = {
+  radial: createPolesSkin,
+  banded: createDonutSkin,
+  striped: createVintageSkin,
   marble: createMarbleSkin,
   fresnel: createFresnelSkin,
   iridescent: createIridescentSkin,
@@ -49,11 +49,10 @@ const skinFactories: Record<AnySkinSubtype, (config: TricolorSkinConfig) => Shad
 }
 
 export function createSkin(
-  selection: BlobXyzSkinSelection,
+  skin: BlobXyzSkin,
   config: TricolorSkinConfig,
 ): ShaderMaterial {
-  const subtype = selection.subtype ?? 'poles'
-  const factory = skinFactories[subtype as AnySkinSubtype]
+  const factory = skinFactories[skin]
   return factory ? factory(config) : createPolesSkin(config)
 }
 

@@ -103,9 +103,7 @@ export type {
   AvatarRenderer,
   AvatarRendererType,
   BlobXyzConfig,
-  BlobXyzSkinSelection,
   BlobXyzSkin,
-  TricolorSubtype,
   SceneConfig,
   SceneBackgroundConfig,
   CameraConfig,
@@ -162,9 +160,8 @@ export type {
 export {
   avatarBlobPresets,
   avatarBlackHolePresets,
-  blobSkinSelectionFromSubtype,
-  BLOB_SKIN_FAMILIES,
-  ALL_BLOB_SKIN_TYPES,
+  BLOB_SKINS,
+  BLOB_SKIN_LABELS,
   randomBlobSkinType,
   randomBlobColors,
   randomBlobSurface,
@@ -186,7 +183,7 @@ export type {
   AvatarBlackHolePreset,
   BlobPresetState,
   BlackHolePresetState,
-  BlobSkinSubtype,
+  BlobSkinType,
   BlobRandomizerState,
 } from './avatar'
 

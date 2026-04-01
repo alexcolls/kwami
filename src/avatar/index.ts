@@ -6,11 +6,10 @@ export { ParticlesFace, defaultParticlesFaceConfig } from './renderers/particles
 export {
   avatarBlobPresets,
   avatarBlackHolePresets,
-  blobSkinSelectionFromSubtype,
 } from './presets'
 export {
-  BLOB_SKIN_FAMILIES,
-  ALL_BLOB_SKIN_TYPES,
+  BLOB_SKINS,
+  BLOB_SKIN_LABELS,
   randomBlobSkinType,
   randomBlobColors,
   randomBlobSurface,
@@ -31,7 +30,7 @@ export type {
   AvatarBlackHolePreset,
   BlobPresetState,
   BlackHolePresetState,
-  BlobSkinSubtype,
+  BlobSkinType,
 } from './presets'
 export type { BlobRandomizerState } from './randomizer'
 export * from './renderers/types'
@@ -40,9 +39,7 @@ export * from './renderers/types'
 export type {
   BlobXyzConfig,
   BlobXyzOptions,
-  BlobXyzSkinSelection,
   BlobXyzSkin,
-  TricolorSubtype,
   TricolorSkinConfig,
   BlobXyzAudioEffects,
 } from './renderers/blob-xyz/types'

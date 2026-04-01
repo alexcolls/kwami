@@ -1,4 +1,4 @@
-import type { AvatarRenderer, BlobXyzConfig, SceneConfig } from '../../types'
+import type { AvatarRenderer, BlobXyzConfig, BlobXyzSkin, SceneConfig } from '../../types'
 
 /**
  * Base interface for avatar renderers
@@ -19,7 +19,7 @@ export interface BlobXyzRendererInterface extends AvatarRenderer {
   setShininess(shininess: number): void
   setWireframe(wireframe: boolean): void
   setOpacity(opacity: number): void
-  setSkin(skin: { skin: string; subtype?: string }): void
+  setSkin(skin: BlobXyzSkin): void
 
   randomize(): void
   resetToDefaults(): void
