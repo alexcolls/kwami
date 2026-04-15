@@ -168,12 +168,16 @@ class LiveKitPipeline implements AgentPipeline {
   private ttsStartTime = 0
   private turnStartTime = 0
 
-  // Callbacks
-  private userSpeechCb?: (transcript: string) => void
-  private agentTextCb?: (text: string) => void
-  private interimTranscriptCb?: (text: string) => void
+  // Callbacks (user/agent text delivered via VoiceSession only — see onUserSpeech / onAgentText)
   private onAgentAudioStreamCb?: (stream: MediaStream) => void
   private toolExecutor?: ToolExecutor
+
+  /** LiveKit often delivers the same final transcript via TranscriptionReceived and DataReceived — dedupe. */
+  private _dedupeUser = { text: '', at: 0 }
+  private _dedupeAgent = { text: '', at: 0 }
+  private _dedupeInterim = { text: '', at: 0 }
+  private readonly _dedupeFinalMs = 2800
+  private readonly _dedupeInterimMs = 120
 
   constructor(config: LiveKitAdapterConfig, voiceSession: VoiceSession) {
     this.config = config
@@ -182,6 +186,58 @@ class LiveKitPipeline implements AgentPipeline {
 
   setToolExecutor(executor: ToolExecutor): void {
     this.toolExecutor = executor
+  }
+
+  /** Same utterance often arrives via DataReceived and TranscriptionReceived with minor text differences. */
+  private dedupeFinalKey(raw: string): string {
+    return raw.trim().replace(/\s+/g, ' ').toLowerCase()
+  }
+
+  private emitFinalUserTranscript(raw: string): void {
+    const text = raw.trim()
+    if (!text) return
+    const key = this.dedupeFinalKey(text)
+    const now = Date.now()
+    if (
+      key === this.dedupeFinalKey(this._dedupeUser.text) &&
+      now - this._dedupeUser.at < this._dedupeFinalMs
+    ) {
+      return
+    }
+    this._dedupeUser = { text, at: now }
+    // Deliver via VoiceSession — onUserSpeech() wires the Agent callback there.
+    this.voiceSession.triggerUserSpeechEnded(text)
+    this.voiceSession.setState('thinking')
+  }
+
+  private emitFinalAgentText(raw: string): void {
+    const text = raw.trim()
+    if (!text) return
+    const key = this.dedupeFinalKey(text)
+    const now = Date.now()
+    if (
+      key === this.dedupeFinalKey(this._dedupeAgent.text) &&
+      now - this._dedupeAgent.at < this._dedupeFinalMs
+    ) {
+      return
+    }
+    this._dedupeAgent = { text, at: now }
+    // Same as user: onAgentText wires the callback on VoiceSession.
+    this.voiceSession.triggerAgentSpeechEnded(text)
+  }
+
+  private emitInterimTranscript(raw: string): void {
+    const text = raw.trim()
+    if (!text) return
+    const now = Date.now()
+    if (
+      text === this._dedupeInterim.text &&
+      now - this._dedupeInterim.at < this._dedupeInterimMs
+    ) {
+      return
+    }
+    this._dedupeInterim = { text, at: now }
+    this.voiceSession.triggerTranscript(text, false)
   }
 
   async connect(options: PipelineConnectOptions): Promise<void> {
@@ -356,6 +412,8 @@ class LiveKitPipeline implements AgentPipeline {
     // Transcriptions from the LiveKit Agents SDK (user speech + agent text).
     // The agent's STT publishes transcriptions for the user's track, and the
     // agent's LLM/TTS text is published for the agent's track.
+    // LiveKit often delivers the same final line via TranscriptionReceived and DataReceived;
+    // emitFinal* dedupes using a normalized key (see dedupeFinalKey).
     this.room.on(RoomEvent.TranscriptionReceived, (
       segments: TranscriptionSegment[],
       participant?: Participant,
@@ -365,22 +423,14 @@ class LiveKitPipeline implements AgentPipeline {
 
       for (const segment of segments) {
         if (fromAgent) {
-          // Agent text output (LLM response transcript)
           if (segment.final && segment.text) {
-            this.agentTextCb?.(segment.text)
-            this.voiceSession.triggerAgentSpeechEnded(segment.text)
+            this.emitFinalAgentText(segment.text)
           }
-        } else {
-          // User speech transcript from the agent's STT
-          if (segment.final && segment.text) {
-            this.userSpeechCb?.(segment.text)
-            this.voiceSession.triggerUserSpeechEnded(segment.text)
-            // Immediate thinking fallback; lk.agent.state will refine it.
-            this.voiceSession.setState('thinking')
-          } else if (segment.text) {
-            this.interimTranscriptCb?.(segment.text)
-            this.voiceSession.triggerTranscript(segment.text, false)
-          }
+        } else if (segment.final && segment.text) {
+          this.endSTTTracking()
+          this.emitFinalUserTranscript(segment.text)
+        } else if (segment.text) {
+          this.emitInterimTranscript(segment.text)
         }
       }
     })
@@ -490,26 +540,17 @@ class LiveKitPipeline implements AgentPipeline {
   private handleAgentData(data: AgentDataMessage): void {
     switch (data.type) {
       case 'transcript':
-        // User speech transcript from STT
         if (data.isFinal && data.transcript) {
           this.endSTTTracking()
-          this.userSpeechCb?.(data.transcript)
-          this.voiceSession.triggerUserSpeechEnded(data.transcript)
-          // Immediate local fallback so the avatar reacts right away.
-          // The real agent state from lk.agent.state will override if needed.
-          this.voiceSession.setState('thinking')
+          this.emitFinalUserTranscript(data.transcript)
         } else if (data.transcript) {
-          // Interim transcript
-          this.interimTranscriptCb?.(data.transcript)
-          this.voiceSession.triggerTranscript(data.transcript, false)
+          this.emitInterimTranscript(data.transcript)
         }
         break
 
       case 'agent_text':
-        // Agent's text response (for display)
         if (data.text) {
-          this.agentTextCb?.(data.text)
-          this.voiceSession.triggerAgentSpeechEnded(data.text)
+          this.emitFinalAgentText(data.text)
         }
         break
 
@@ -742,7 +783,6 @@ class LiveKitPipeline implements AgentPipeline {
   // ---------------------------------------------------------------------------
 
   onUserSpeech(callback: (transcript: string) => void): void {
-    this.userSpeechCb = callback
     this.voiceSession.on({
       onUserSpeechEnded: callback,
     })
@@ -754,14 +794,12 @@ class LiveKitPipeline implements AgentPipeline {
   }
 
   onAgentText(callback: (text: string) => void): void {
-    this.agentTextCb = callback
     this.voiceSession.on({
       onAgentSpeechEnded: callback,
     })
   }
 
   onInterimTranscript(callback: (text: string) => void): void {
-    this.interimTranscriptCb = callback
     this.voiceSession.on({
       onTranscript: (text, isFinal) => {
         if (!isFinal) callback(text)
@@ -930,8 +968,8 @@ class LiveKitPipeline implements AgentPipeline {
       const data = encoder.encode(JSON.stringify({ type: 'text', text }))
       this.room.localParticipant.publishData(data, { reliable: true })
 
-      // Also trigger as user speech
-      this.userSpeechCb?.(text)
+      // Mirror typed input through the same path as voice STT (single listener chain).
+      this.voiceSession.triggerUserSpeechEnded(text)
     }
   }
 

@@ -486,6 +486,8 @@ export interface AgentPipeline {
   interrupt(): void
   onUserSpeech(callback: (transcript: string) => void): void
   onAgentText(callback: (text: string) => void): void
+  /** Optional: interim STT (e.g. LiveKit pipeline) */
+  onInterimTranscript?(callback: (text: string) => void): void
   onAgentSpeech(callback: (audio: ArrayBuffer) => void): void
   dispose(): void
   setToolExecutor(executor: ToolExecutor): void

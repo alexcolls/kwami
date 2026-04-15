@@ -31,6 +31,7 @@ export class Agent {
   // Callbacks
   private onUserSpeechCallback?: (transcript: string) => void
   private onAgentTextCallback?: (text: string) => void
+  private onInterimTranscriptCallback?: (text: string) => void
   private _onErrorCallback?: (error: Error) => void
   private onAgentAudioStreamCallback?: (stream: MediaStream) => void
 
@@ -76,6 +77,9 @@ export class Agent {
     }
     if (this.onAgentTextCallback) {
       this.pipeline.onAgentText(this.onAgentTextCallback)
+    }
+    if (this.onInterimTranscriptCallback && typeof this.pipeline.onInterimTranscript === 'function') {
+      this.pipeline.onInterimTranscript(this.onInterimTranscriptCallback)
     }
 
     // Wire up agent audio stream callback for avatar visualization
@@ -289,16 +293,38 @@ export class Agent {
    * Register callback for user speech transcripts
    */
   onUserSpeech(callback: (transcript: string) => void): void {
-    this.onUserSpeechCallback = callback
-    this.pipeline?.onUserSpeech(callback)
+    const previous = this.onUserSpeechCallback
+    this.onUserSpeechCallback = (transcript: string) => {
+      previous?.(transcript)
+      callback(transcript)
+    }
+    this.pipeline?.onUserSpeech(this.onUserSpeechCallback)
   }
 
   /**
    * Register callback for agent text responses
    */
   onAgentText(callback: (text: string) => void): void {
-    this.onAgentTextCallback = callback
-    this.pipeline?.onAgentText(callback)
+    const previous = this.onAgentTextCallback
+    this.onAgentTextCallback = (text: string) => {
+      previous?.(text)
+      callback(text)
+    }
+    this.pipeline?.onAgentText(this.onAgentTextCallback)
+  }
+
+  /**
+   * Register callback for interim user speech (STT in progress)
+   */
+  onInterimTranscript(callback: (text: string) => void): void {
+    const previous = this.onInterimTranscriptCallback
+    this.onInterimTranscriptCallback = (text: string) => {
+      previous?.(text)
+      callback(text)
+    }
+    if (this.pipeline && typeof this.pipeline.onInterimTranscript === 'function') {
+      this.pipeline.onInterimTranscript(this.onInterimTranscriptCallback)
+    }
   }
 
   /**
