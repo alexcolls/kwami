@@ -153,13 +153,14 @@ export class Avatar {
 
     // Handle state for blob renderer
     if (this.currentRenderer === 'blob-xyz' && this.blobXyz) {
-      // Clean up previous state
-      if (previousState === 'listening' && state !== 'listening') this.blobXyz.stopListening()
+      // Keep listening state purely visual here.
+      // Mic capture is controlled explicitly by UI (Audio panel), not by agent state.
+      this.blobXyz.isListening = state === 'listening'
       if (previousState === 'thinking' && state !== 'thinking') this.blobXyz.stopThinking()
 
       switch (state) {
         case 'listening':
-          this.blobXyz.startListening()
+          // No automatic microphone activation.
           break
         case 'thinking':
           this.blobXyz.startThinking()
