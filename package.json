@@ -42,12 +42,12 @@
   "dependencies": {
     "livekit-client": "^2.6.0",
     "simplex-noise": "^4.0.3",
-    "three": ">=0.183.2"
+    "three": ">=0.184.0"
   },
   "devDependencies": {
     "@types/node": "25.3.5",
     "@eslint/js": "^10.0.1",
-    "@types/three": "^0.170.0",
+    "@types/three": "^0.184.0",
     "eslint": "^9.18.0",
     "globals": "^17.4.0",
     "jiti": "2.6.1",
@@ -58,6 +58,6 @@
     "vitest": "^4.0.18"
   },
   "peerDependencies": {
-    "three": ">=0.183.2"
+    "three": ">=0.184.0"
   }
 }
