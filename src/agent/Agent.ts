@@ -157,7 +157,7 @@ export class Agent {
    * This sends a data message to the running agent to update its config
    */
   syncConfigToBackend(
-    type: 'voice' | 'soul' | 'tools' | 'full' | 'llm',
+    type: 'voice' | 'soul' | 'tools' | 'full' | 'llm' | 'memory',
     config: VoicePipelineConfig | SoulConfig | ToolDefinition[] | Record<string, unknown>
   ): void {
     if (!this.pipeline?.isConnected()) {
