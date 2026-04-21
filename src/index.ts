@@ -160,6 +160,7 @@ export type {
 export {
   avatarBlobPresets,
   avatarBlackHolePresets,
+  avatarEyeIrisPresets,
   BLOB_SKINS,
   BLOB_SKIN_LABELS,
   randomBlobSkinType,
@@ -181,8 +182,10 @@ export {
 export type {
   AvatarBlobPreset,
   AvatarBlackHolePreset,
+  AvatarEyeIrisPreset,
   BlobPresetState,
   BlackHolePresetState,
+  EyeIrisPresetState,
   BlobSkinType,
   BlobRandomizerState,
 } from './avatar'

@@ -4,8 +4,10 @@ import { Scene } from './scene'
 import { BlobXyz } from './renderers/blob-xyz'
 import { BlackHole } from './renderers/black-hole'
 import { ParticlesFace } from './renderers/particles-face'
+import { EyeIris } from './renderers/eye-iris'
 import { KwamiAudio } from './audio'
 import { logger } from '../utils/logger'
+import * as THREE from 'three'
 
 /**
  * Avatar - Manages the visual representation of Kwami
@@ -19,6 +21,7 @@ export class Avatar {
   private blobXyz: BlobXyz | null = null
   private blackHole: BlackHole | null = null
   private particlesFace: ParticlesFace | null = null
+  private eyeIris: EyeIris | null = null
   private audio: KwamiAudio
   private currentState: KwamiState = 'idle'
   private resizeObserver: ResizeObserver | null = null
@@ -53,6 +56,9 @@ export class Avatar {
     } else if (rendererType === 'particles-face') {
       this.currentRenderer = 'particles-face'
       this.initParticlesFaceRenderer()
+    } else if (rendererType === 'eye-iris') {
+      this.currentRenderer = 'eye-iris'
+      this.initEyeIrisRenderer()
     } else {
       logger.warn(`Renderer type "${rendererType}" not supported, falling back to blob-xyz`)
       this.currentRenderer = 'blob-xyz'
@@ -76,6 +82,7 @@ export class Avatar {
       colors: blobConfig.colors,
       shininess: blobConfig.shininess,
       wireframe: blobConfig.wireframe,
+      cursorFollow: blobConfig.cursorFollow,
     })
 
     // Add blob mesh to scene
@@ -123,6 +130,11 @@ export class Avatar {
       audio: this.audio,
       ...pfConfig,
     })
+  }
+
+  private initEyeIrisRenderer(): void {
+    const eyeIrisConfig = this.config.eyeIris ?? {}
+    this.eyeIris = new EyeIris(this.scene.scene, this.scene.camera, this.scene.renderer, eyeIrisConfig)
   }
 
   private setupResizeHandling(): void {
@@ -181,6 +193,9 @@ export class Avatar {
     if (this.currentRenderer === 'particles-face' && this.particlesFace) {
       this.particlesFace.setState(state)
     }
+    if (this.currentRenderer === 'eye-iris' && this.eyeIris) {
+      this.eyeIris.setState(state)
+    }
 
     logger.debug(`Avatar state changed: ${previousState} → ${state}`)
   }
@@ -229,6 +244,9 @@ export class Avatar {
     } else if (this.currentRenderer === 'particles-face' && this.particlesFace) {
       this.particlesFace.dispose()
       this.particlesFace = null
+    } else if (this.currentRenderer === 'eye-iris' && this.eyeIris) {
+      this.eyeIris.dispose()
+      this.eyeIris = null
     }
 
     // Initialize new renderer
@@ -239,6 +257,8 @@ export class Avatar {
       this.initBlackHoleRenderer()
     } else if (newRenderer === 'particles-face') {
       this.initParticlesFaceRenderer()
+    } else if (newRenderer === 'eye-iris') {
+      this.initEyeIrisRenderer()
     }
 
     // Restore state
@@ -270,6 +290,10 @@ export class Avatar {
    */
   getParticlesFace(): ParticlesFace | null {
     return this.particlesFace
+  }
+
+  getEyeIris(): EyeIris | null {
+    return this.eyeIris
   }
 
   /**
@@ -366,6 +390,14 @@ export class Avatar {
       const secondaryColor = `hsl(${secondaryHue}, 70%, 60%)`
       this.particlesFace?.setColor(color)
       this.particlesFace?.setSecondaryColor(secondaryColor)
+    } else if (this.currentRenderer === 'eye-iris') {
+      const palettes = ['light-brown', 'hazel', 'blue-grey', 'green-blue'] as const
+      const palette = palettes[Math.floor(Math.random() * palettes.length)]
+      this.eyeIris?.setPalettePreset(palette)
+      this.eyeIris?.setFiberDensity(THREE.MathUtils.randFloat(90, 160))
+      this.eyeIris?.setRadialStreakStrength(THREE.MathUtils.randFloat(0.4, 1.0))
+      this.eyeIris?.setCollaretteStrength(THREE.MathUtils.randFloat(0.3, 0.9))
+      this.eyeIris?.setLimbalIntensity(THREE.MathUtils.randFloat(0.5, 1.0))
     }
   }
 
@@ -420,6 +452,7 @@ export class Avatar {
     this.blobXyz?.dispose()
     this.blackHole?.dispose()
     this.particlesFace?.dispose()
+    this.eyeIris?.dispose()
     this.audio.dispose()
     this.scene.dispose()
   }

@@ -65,6 +65,47 @@ export interface AvatarBlackHolePreset {
   blackHole: Partial<BlackHolePresetState>
 }
 
+export interface EyeIrisPresetState {
+  palettePreset: 'light-brown' | 'hazel' | 'blue-grey' | 'green-blue'
+  geometry: { irisRadius: number; pupilRadius: number; limbalRingWidth: number }
+  detail: {
+    fiberDensity: number
+    radialStreakStrength: number
+    collaretteStrength: number
+    limbalIntensity: number
+    noiseStrength: number
+    cryptStrength: number
+    furrowStrength: number
+    ringContrast: number
+    sectorMix: number
+  }
+  color: {
+    base: string
+    secondary: string
+    accent: string
+    limbal: string
+    collarette: string
+    crypt: string
+    streak: string
+  }
+  animation: { shimmerSpeed: number; shimmerStrength: number; patternFlow: number; patternRotation: number }
+  audioEffects: {
+    enabled: boolean
+    reactivity: number
+    pupilResponse: number
+    shimmerResponse: number
+    smoothing: number
+  }
+  scale: number
+}
+
+export interface AvatarEyeIrisPreset {
+  id: string
+  name: string
+  icon: string
+  eyeIris: Partial<EyeIrisPresetState>
+}
+
 export const avatarBlobPresets: AvatarBlobPreset[] = [
   {
     id: 'rgb-pulse',
@@ -615,6 +656,61 @@ export const avatarBlackHolePresets: AvatarBlackHolePreset[] = [
       disk: { innerRadius: 0.22, outerRadius: 8.5, tiltAngle: Math.PI / 3.2, flowSpeed: 0.2, noiseScale: 2.2, density: 1.3 },
       effects: { bloomIntensity: 0.9, bloomThreshold: 0.78, bloomRadius: 0.72, lensingStrength: 0.11, lensingRadius: 0.3, chromaticAberration: 0.006 },
       animation: { autoRotate: false, autoRotateSpeed: 0.1, diskRotationSpeed: 0.005, starsRotationSpeed: 0.003 },
+    },
+  },
+]
+
+export const avatarEyeIrisPresets: AvatarEyeIrisPreset[] = [
+  {
+    id: 'eye-iris-light-brown',
+    name: 'Light Brown',
+    icon: 'ph:eye-duotone',
+    eyeIris: {
+      palettePreset: 'light-brown',
+      geometry: { irisRadius: 0.92, pupilRadius: 0.24, limbalRingWidth: 0.07 },
+      detail: { fiberDensity: 162, radialStreakStrength: 0.92, collaretteStrength: 0.74, limbalIntensity: 1.0, noiseStrength: 0.24, cryptStrength: 0.94, furrowStrength: 0.78, ringContrast: 0.88, sectorMix: 0.52 },
+      color: { base: '#8f4b24', secondary: '#b06a34', accent: '#e2a24d', limbal: '#3b1d10', collarette: '#a35a2c', crypt: '#2a160d', streak: '#f0b265' },
+      animation: { shimmerSpeed: 0.14, shimmerStrength: 0.08, patternFlow: 0.22, patternRotation: 0.06 },
+      scale: 5.0,
+    },
+  },
+  {
+    id: 'eye-iris-hazel',
+    name: 'Hazel',
+    icon: 'ph:eye-duotone',
+    eyeIris: {
+      palettePreset: 'hazel',
+      geometry: { irisRadius: 0.94, pupilRadius: 0.22, limbalRingWidth: 0.06 },
+      detail: { fiberDensity: 170, radialStreakStrength: 0.98, collaretteStrength: 0.74, limbalIntensity: 1.02, noiseStrength: 0.28, cryptStrength: 0.92, furrowStrength: 0.74, ringContrast: 0.86, sectorMix: 0.58 },
+      color: { base: '#6b4b23', secondary: '#a37229', accent: '#d0a73c', limbal: '#2b190a', collarette: '#845223', crypt: '#1d1208', streak: '#d6b45b' },
+      animation: { shimmerSpeed: 0.16, shimmerStrength: 0.1, patternFlow: 0.24, patternRotation: 0.08 },
+      scale: 5.0,
+    },
+  },
+  {
+    id: 'eye-iris-blue-grey',
+    name: 'Blue Grey',
+    icon: 'ph:eye-duotone',
+    eyeIris: {
+      palettePreset: 'blue-grey',
+      geometry: { irisRadius: 0.94, pupilRadius: 0.21, limbalRingWidth: 0.07 },
+      detail: { fiberDensity: 182, radialStreakStrength: 1.04, collaretteStrength: 0.62, limbalIntensity: 1.08, noiseStrength: 0.2, cryptStrength: 1.0, furrowStrength: 0.8, ringContrast: 0.92, sectorMix: 0.44 },
+      color: { base: '#73879b', secondary: '#9db2c4', accent: '#d6e3ef', limbal: '#2b3540', collarette: '#8398ab', crypt: '#1d2530', streak: '#dce7f0' },
+      animation: { shimmerSpeed: 0.12, shimmerStrength: 0.08, patternFlow: 0.18, patternRotation: 0.05 },
+      scale: 5.0,
+    },
+  },
+  {
+    id: 'eye-iris-green-blue',
+    name: 'Green Blue',
+    icon: 'ph:eye-duotone',
+    eyeIris: {
+      palettePreset: 'green-blue',
+      geometry: { irisRadius: 0.94, pupilRadius: 0.2, limbalRingWidth: 0.065 },
+      detail: { fiberDensity: 190, radialStreakStrength: 1.06, collaretteStrength: 0.68, limbalIntensity: 1.04, noiseStrength: 0.24, cryptStrength: 0.96, furrowStrength: 0.82, ringContrast: 0.9, sectorMix: 0.66 },
+      color: { base: '#2f8f84', secondary: '#4ac1aa', accent: '#a1e75c', limbal: '#12483e', collarette: '#3ea892', crypt: '#0d3129', streak: '#9fe5b2' },
+      animation: { shimmerSpeed: 0.14, shimmerStrength: 0.09, patternFlow: 0.22, patternRotation: 0.07 },
+      scale: 5.0,
     },
   },
 ]

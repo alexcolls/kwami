@@ -53,6 +53,11 @@ export class BlobXyz {
     duration: number
   }> = []
   private clickEnabled = false
+  private cursorFollowEnabled = false
+  private cursorFollowSensitivity = 1
+  private pointerTarget = { x: 0, y: 0 }
+  private hasPointerInput = false
+  private pointerCleanup: (() => void) | null = null
 
   // Touch configuration
   public touchStrength = 1.0
@@ -184,6 +189,11 @@ export class BlobXyz {
 
     if (options.wireframe !== undefined) {
       this.setWireframe(options.wireframe)
+    }
+
+    if (options.cursorFollow) {
+      this.setCursorFollowSensitivity(options.cursorFollow.sensitivity ?? 1)
+      this.setCursorFollowEnabled(options.cursorFollow.enabled ?? false)
     }
 
     this.startAnimation()
@@ -369,6 +379,21 @@ export class BlobXyz {
         this.mesh.rotation.z += this.rotation.z
       }
 
+      if (this.cursorFollowEnabled) {
+        const driftY = Math.sin(performance.now() * 0.00025) * 0.08
+        const driftX = Math.cos(performance.now() * 0.0002) * 0.04
+        const s = this.cursorFollowSensitivity
+        const desiredY = this.hasPointerInput
+          ? (Math.PI / 2) + (this.pointerTarget.y * 1.1 * s)
+          : (Math.PI / 2) + driftY
+        const desiredX = this.hasPointerInput
+          ? this.pointerTarget.x * 0.55 * s
+          : driftX
+
+        this.mesh.rotation.y += (desiredY - this.mesh.rotation.y) * 0.08
+        this.mesh.rotation.x += (desiredX - this.mesh.rotation.x) * 0.08
+      }
+
       // Clean up expired touch points
       const currentTime = Date.now()
       this.touchPoints = this.touchPoints.filter(
@@ -505,6 +530,28 @@ export class BlobXyz {
    */
   setRotation(x: number, y: number, z: number): void {
     this.rotation = { x, y, z }
+  }
+
+  setCursorFollowEnabled(enabled: boolean): void {
+    this.cursorFollowEnabled = enabled
+    if (enabled) {
+      this.bindPointerTracking()
+    } else {
+      this.unbindPointerTracking()
+      this.hasPointerInput = false
+    }
+  }
+
+  getCursorFollowEnabled(): boolean {
+    return this.cursorFollowEnabled
+  }
+
+  setCursorFollowSensitivity(value: number): void {
+    this.cursorFollowSensitivity = Math.max(0.1, Math.min(2.5, value))
+  }
+
+  getCursorFollowSensitivity(): number {
+    return this.cursorFollowSensitivity
   }
 
   /**
@@ -846,6 +893,35 @@ export class BlobXyz {
     if (this.mesh) {
       applyIntensity(this.mesh.material as ShaderMaterial)
     }
+  }
+
+  private bindPointerTracking(): void {
+    if (this.pointerCleanup || typeof window === 'undefined') return
+
+    const onPointerMove = (event: PointerEvent) => {
+      const nx = (event.clientX / window.innerWidth) * 2 - 1
+      const ny = (event.clientY / window.innerHeight) * 2 - 1
+      this.pointerTarget.x = Math.max(-1, Math.min(1, ny))
+      this.pointerTarget.y = Math.max(-1, Math.min(1, nx))
+      this.hasPointerInput = true
+    }
+
+    const onPointerLeave = () => {
+      this.hasPointerInput = false
+    }
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
+    window.addEventListener('pointerleave', onPointerLeave, { passive: true })
+
+    this.pointerCleanup = () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerleave', onPointerLeave)
+      this.pointerCleanup = null
+    }
+  }
+
+  private unbindPointerTracking(): void {
+    this.pointerCleanup?.()
   }
 
   /**
@@ -1205,6 +1281,7 @@ export class BlobXyz {
    * Cleanup and dispose resources
    */
   dispose(): void {
+    this.unbindPointerTracking()
     this.disableClickInteraction()
     this.stopThinking()
     this.stopAnimation()

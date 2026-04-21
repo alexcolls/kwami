@@ -37,6 +37,10 @@ export interface BlobXyzConfig {
   shininess?: number
   wireframe?: boolean
   position?: { x: number; y: number } // Normalized position (0-1)
+  cursorFollow?: {
+    enabled?: boolean
+    sensitivity?: number
+  }
 }
 
 /**
@@ -56,6 +60,10 @@ export interface BlobXyzOptions {
   colors?: { x: string; y: string; z: string }
   shininess?: number
   wireframe?: boolean
+  cursorFollow?: {
+    enabled?: boolean
+    sensitivity?: number
+  }
   onAfterRender?: () => void
 }
 

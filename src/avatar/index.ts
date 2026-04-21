@@ -3,9 +3,11 @@ export { Scene, StarField, type StarFieldConfig } from './scene'
 export { KwamiAudio } from './audio'
 export { BlobXyz, BlobXyzPosition, defaultBlobXyzConfig, createSkin } from './renderers/blob-xyz'
 export { ParticlesFace, defaultParticlesFaceConfig } from './renderers/particles-face'
+export { EyeIris, getDefaultEyeIrisConfig, eyeIrisPalettePresets, getEyeIrisPalette } from './renderers/eye-iris'
 export {
   avatarBlobPresets,
   avatarBlackHolePresets,
+  avatarEyeIrisPresets,
 } from './presets'
 export {
   BLOB_SKINS,
@@ -28,8 +30,10 @@ export {
 export type {
   AvatarBlobPreset,
   AvatarBlackHolePreset,
+  AvatarEyeIrisPreset,
   BlobPresetState,
   BlackHolePresetState,
+  EyeIrisPresetState,
   BlobSkinType,
 } from './presets'
 export type { BlobRandomizerState } from './randomizer'
@@ -50,3 +54,9 @@ export type {
   ParticlesFaceOptions,
   ParticlesFaceAudioEffects,
 } from './renderers/particles-face/types'
+export type {
+  EyeIrisConfig,
+  EyeIrisOptions,
+  EyeIrisPalettePreset,
+  EyeIrisAudioEffects,
+} from './renderers/eye-iris/types'

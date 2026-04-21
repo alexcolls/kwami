@@ -76,13 +76,14 @@ export interface KwamiCallbacks {
 // Avatar
 // -----------------------------------------------------------------------------
 
-export type AvatarRendererType = 'blob-xyz' | 'black-hole' | 'particles-face'
+export type AvatarRendererType = 'blob-xyz' | 'black-hole' | 'particles-face' | 'eye-iris'
 
 export interface AvatarConfig {
   renderer?: AvatarRendererType
   blob?: BlobXyzConfig
   blackHole?: BlackHoleConfig
   particlesFace?: ParticlesFaceConfig
+  eyeIris?: EyeIrisConfig
   scene?: SceneConfig
   interaction?: InteractionConfig
   audio?: {
@@ -111,6 +112,51 @@ export interface ParticlesFaceConfig {
   ambientParticles?: number
   ambientRadius?: number
   depthSpread?: number
+}
+
+export type EyeIrisPalettePreset = 'light-brown' | 'hazel' | 'blue-grey' | 'green-blue'
+
+export interface EyeIrisConfig {
+  palettePreset?: EyeIrisPalettePreset
+  geometry?: {
+    irisRadius?: number
+    pupilRadius?: number
+    limbalRingWidth?: number
+  }
+  detail?: {
+    fiberDensity?: number
+    radialStreakStrength?: number
+    collaretteStrength?: number
+    limbalIntensity?: number
+    noiseStrength?: number
+    cryptStrength?: number
+    furrowStrength?: number
+    ringContrast?: number
+    sectorMix?: number
+  }
+  color?: {
+    base?: string
+    secondary?: string
+    accent?: string
+    limbal?: string
+    collarette?: string
+    crypt?: string
+    streak?: string
+  }
+  animation?: {
+    shimmerSpeed?: number
+    shimmerStrength?: number
+    patternFlow?: number
+    patternRotation?: number
+  }
+  audioEffects?: {
+    enabled?: boolean
+    reactivity?: number
+    pupilResponse?: number
+    shimmerResponse?: number
+    smoothing?: number
+  }
+  scale?: number
 }
 
 export interface AudioConfig {
@@ -153,6 +199,10 @@ export interface BlobXyzConfig {
   transition?: {
     speed?: number
     thinkingDuration?: number
+  }
+  cursorFollow?: {
+    enabled?: boolean
+    sensitivity?: number
   }
 }
 

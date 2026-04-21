@@ -26,16 +26,11 @@ void main(){
 
   float angle=atan(vPosition.z,vPosition.x);
   float twist=angle+vPosition.y*4.5;
-  float t=fract(twist/(2.*3.14159265359)*1.5);
-
-  vec3 _color;
-  if(t<1./3.){
-    _color=mix(_color1,_color2,smoothstep(0.,1.,t*3.));
-  }else if(t<2./3.){
-    _color=mix(_color2,_color3,smoothstep(0.,1.,(t-1./3.)*3.));
-  }else{
-    _color=mix(_color3,_color1,smoothstep(0.,1.,(t-2./3.)*3.));
-  }
+  float phase=twist*1.5;
+  vec3 weights=.5+.5*vec3(cos(phase),cos(phase-2.09439510239),cos(phase-4.18879020479));
+  float total=weights.x+weights.y+weights.z+0.0001;
+  weights/=total;
+  vec3 _color=_color1*weights.x+_color2*weights.y+_color3*weights.z;
 
   vec3 finalColor=clamp(_color+specular,0.,1.);
 
