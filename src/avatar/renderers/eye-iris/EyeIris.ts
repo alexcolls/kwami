@@ -25,6 +25,11 @@ export class EyeIris {
   private animationFrameId: number | null = null
   private disposed = false
   private audioLevel = 0
+  private audio?: { getFrequencyData: () => Uint8Array }
+  private currentState: KwamiState = 'idle'
+  private followTarget = new THREE.Vector2(0, 0)
+  private followCurrent = new THREE.Vector2(0, 0)
+  private removePointerMoveHandler: (() => void) | null = null
 
   constructor(
     scene: THREE.Scene,
@@ -44,18 +49,38 @@ export class EyeIris {
       color: { ...defaults.color, ...options.color },
       animation: { ...defaults.animation, ...options.animation },
       audioEffects: { ...defaults.audioEffects, ...options.audioEffects },
+      follow: { ...defaults.follow, ...options.follow },
       scale: options.scale ?? defaults.scale,
     }
     if (options.palettePreset) {
       this.config.color = { ...getEyeIrisPalette(options.palettePreset), ...this.config.color }
     }
+    this.audio = options.audio
 
     this.group = new THREE.Group()
     this.group.scale.setScalar(this.config.scale)
     this.scene.add(this.group)
 
     this.createIris()
+    this.setupPointerFollow()
     this.startAnimation()
+  }
+
+  private setupPointerFollow(): void {
+    const dom = this.renderer.domElement
+    const onPointerMove = (event: PointerEvent) => {
+      const rect = dom.getBoundingClientRect()
+      if (rect.width <= 0 || rect.height <= 0) return
+      const x = ((event.clientX - rect.left) / rect.width) * 2.0 - 1.0
+      const y = ((event.clientY - rect.top) / rect.height) * 2.0 - 1.0
+      const range = 0.35 * this.config.follow.sensitivity
+      this.followTarget.set(
+        THREE.MathUtils.clamp(x * range, -0.5, 0.5),
+        THREE.MathUtils.clamp(y * range, -0.5, 0.5),
+      )
+    }
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
+    this.removePointerMoveHandler = () => window.removeEventListener('pointermove', onPointerMove)
   }
 
   private createIris(): void {
@@ -68,6 +93,7 @@ export class EyeIris {
       uPupilRadius: new THREE.Uniform(this.config.geometry.pupilRadius),
       uLimbalRingWidth: new THREE.Uniform(this.config.geometry.limbalRingWidth),
       uFiberDensity: new THREE.Uniform(this.config.detail.fiberDensity),
+      uFiberSharpness: new THREE.Uniform(this.config.detail.fiberSharpness),
       uRadialStreakStrength: new THREE.Uniform(this.config.detail.radialStreakStrength),
       uCollaretteStrength: new THREE.Uniform(this.config.detail.collaretteStrength),
       uLimbalIntensity: new THREE.Uniform(this.config.detail.limbalIntensity),
@@ -76,6 +102,9 @@ export class EyeIris {
       uFurrowStrength: new THREE.Uniform(this.config.detail.furrowStrength),
       uRingContrast: new THREE.Uniform(this.config.detail.ringContrast),
       uSectorMix: new THREE.Uniform(this.config.detail.sectorMix),
+      uPigmentMottleStrength: new THREE.Uniform(this.config.detail.pigmentMottleStrength),
+      uSpokesStrength: new THREE.Uniform(this.config.detail.spokesStrength),
+      uInnerRingStrength: new THREE.Uniform(this.config.detail.innerRingStrength),
       uShimmerStrength: new THREE.Uniform(this.config.animation.shimmerStrength),
       uPatternFlow: new THREE.Uniform(this.config.animation.patternFlow),
       uPatternRotation: new THREE.Uniform(this.config.animation.patternRotation),
@@ -106,6 +135,7 @@ export class EyeIris {
         uniform float uPupilRadius;
         uniform float uLimbalRingWidth;
         uniform float uFiberDensity;
+        uniform float uFiberSharpness;
         uniform float uRadialStreakStrength;
         uniform float uCollaretteStrength;
         uniform float uLimbalIntensity;
@@ -114,6 +144,9 @@ export class EyeIris {
         uniform float uFurrowStrength;
         uniform float uRingContrast;
         uniform float uSectorMix;
+        uniform float uPigmentMottleStrength;
+        uniform float uSpokesStrength;
+        uniform float uInnerRingStrength;
         uniform float uShimmerStrength;
         uniform float uPatternFlow;
         uniform float uPatternRotation;
@@ -184,10 +217,32 @@ export class EyeIris {
           float harmonic = max(1.0, floor(uFiberDensity + 0.5));
           float harmonic2 = max(1.0, floor(harmonic * 0.53 + 0.5));
           float harmonic3 = max(1.0, floor(harmonic * 1.9 + 0.5));
-          float primaryFibers = ringBands(angleWarp, radialFlow, harmonic, 28.0);
-          float secondaryFibers = ringBands(angleWarp, radialFlow * 1.7, harmonic2, 31.0);
-          float microFibers = ringBands(angleWarp, radialFlow * 2.4, harmonic3, 34.0);
+          // Vary local strand frequency per angular/radial sector for non-uniform iris fibers.
+          float angle01 = (angle + 3.141592653589793) / 6.283185307179586;
+          float sectorCell = floor(angle01 * 28.0);
+          float radialCell = floor(radial * 18.0);
+          float sectorRand = hash(vec2(sectorCell, radialCell));
+          float localFreq = mix(0.72, 1.38, sectorRand);
+          float branchWarp = (fbm(vec2(
+            angleVec.x * 9.0 + radialFlow * 5.2,
+            angleVec.y * 9.0 - radialFlow * 4.4
+          )) - 0.5) * (0.42 + 0.55 * uNoiseStrength);
+          float primaryFibers = ringBands(angleWarp + branchWarp, radialFlow, harmonic * localFreq, 28.0);
+          float secondaryFibers = ringBands(angleWarp + branchWarp * 1.5, radialFlow * 1.7, harmonic2 * mix(0.9, 1.45, sectorRand), 31.0);
+          float microFibers = ringBands(angleWarp + branchWarp * 2.1, radialFlow * 2.4, harmonic3 * mix(0.8, 1.6, sectorRand), 34.0);
           float fibers = primaryFibers * 0.5 + secondaryFibers * 0.35 + microFibers * 0.15;
+          float fiberSharp = mix(1.25, 0.35, clamp(uFiberSharpness, 0.0, 1.5) / 1.5);
+          fibers = pow(clamp(fibers, 0.0, 1.0), fiberSharp);
+          float fiberContinuity = smoothstep(0.22, 0.9, fbm(vec2(
+            angleVec.x * 15.0 + radialFlow * 19.0,
+            angleVec.y * 15.0 - radialFlow * 13.0
+          )));
+          float microCuts = smoothstep(0.72, 0.96, fbm(vec2(
+            angleVec.x * 36.0 + radialFlow * 31.0,
+            angleVec.y * 36.0 - radialFlow * 27.0
+          )));
+          fibers *= mix(0.58, 1.22, fiberContinuity);
+          fibers *= (1.0 - microCuts * (0.14 + 0.24 * uNoiseStrength));
 
           // Crypts and furrows produce dark irregular tear-like details.
           float crypts = fbm(vec2(
@@ -234,6 +289,23 @@ export class EyeIris {
             angleVec.y * 3.0 + radialFlow * 3.6
           )) * 1.7);
           float sectorTint = mix(1.0 - uSectorMix * 0.25, 1.0 + uSectorMix * 0.25, sectors);
+          float spokesRaw = 0.5 + 0.5 * sin(angleWarp * (harmonic * 0.42) + radialFlow * 45.0);
+          float spokesBreak = fbm(vec2(angleVec.x * 14.0 + radialFlow * 8.0, angleVec.y * 14.0 + radialFlow * 11.0));
+          float spokeMask = smoothstep(0.46, 0.86, spokesRaw * (0.76 + 0.52 * spokesBreak)) * smoothstep(0.04, 0.95, radial);
+          float pigmentMottle = fbm(vec2(
+            p.x * (12.0 + uNoiseStrength * 4.0) + radialFlow * 5.0,
+            p.y * (12.0 + uNoiseStrength * 4.0) - radialFlow * 4.0
+          ));
+          float pigmentMask = smoothstep(0.36, 0.8, pigmentMottle) * smoothstep(0.08, 0.98, radial);
+          float innerRingCenter = uPupilRadius + irisSpan * 0.11;
+          float innerRing = exp(-pow((r - innerRingCenter) / (irisSpan * 0.045), 2.0));
+          float innerRingBreak = 0.62 + 0.42 * fbm(vec2(
+            angleVec.x * 16.0 + radialFlow * 9.0,
+            angleVec.y * 16.0 + radialFlow * 15.0
+          ));
+          float innerRingMask = innerRing * innerRingBreak;
+          float cryptLineMap = smoothstep(0.55, 0.92, crypts) * smoothstep(0.08, 0.88, radial);
+          float furrowLineMap = smoothstep(0.58, 0.95, furrows) * smoothstep(0.2, 1.0, radial);
 
           float shimmer = (sin(uTime * 1.2 + angleWarp * 18.0 + radialFlow * 8.0) * 0.5 + 0.5) * (0.35 + 0.65 * invRadial);
           float microPits = smoothstep(0.72, 0.93, fbm(vec2(
@@ -243,11 +315,17 @@ export class EyeIris {
 
           vec3 color = mix(uSecondaryColor, uBaseColor, pow(radial, 0.85));
           color = mix(color, uStreakColor, fibers * uRadialStreakStrength * (0.22 + 0.28 * invRadial));
+          color = mix(color, uSecondaryColor, fibers * (0.08 + 0.14 * (1.0 - sectorRand)));
           color = mix(color, uAccentColor, warmSpeckles * 0.22);
           color += (depthBands - 0.5) * (0.12 + 0.2 * uRingContrast);
           color = mix(color, uCollaretteColor, collaretteMask * uCollaretteStrength * 0.72);
           color += warmSpeckles * uNoiseStrength * 0.34 * uAccentColor;
           color = mix(color, uCryptColor, cryptMask * uCryptStrength * 0.65);
+          color = mix(color, uStreakColor, spokeMask * uSpokesStrength * 0.95);
+          color = mix(color, uAccentColor, pigmentMask * uPigmentMottleStrength * 0.62);
+          color = mix(color, uLimbalColor, innerRingMask * uInnerRingStrength * 0.78);
+          color = mix(color, uCryptColor, cryptLineMap * uCryptStrength * 0.55);
+          color -= furrowLineMap * (0.03 + 0.18 * uFurrowStrength);
           color -= furrowMask * (0.05 + 0.22 * uFurrowStrength);
           color += shimmer * uShimmerStrength * 0.09;
           color -= microPits * 0.08 * (0.6 + 0.4 * uNoiseStrength);
@@ -291,14 +369,62 @@ export class EyeIris {
     if (this.disposed) return
     const dt = deltaTime ?? this.clock.getDelta()
     this.uniforms.uTime.value += dt * (0.5 + this.config.animation.shimmerSpeed)
+    if (this.config.follow.enabled) {
+      this.followCurrent.lerp(this.followTarget, 0.11)
+      this.irisMesh.rotation.y = this.followCurrent.x
+      this.irisMesh.rotation.x = -this.followCurrent.y
+    } else {
+      this.followTarget.set(0, 0)
+      this.followCurrent.lerp(this.followTarget, 0.15)
+      this.irisMesh.rotation.y = this.followCurrent.x
+      this.irisMesh.rotation.x = -this.followCurrent.y
+    }
     if (this.config.audioEffects.enabled) {
-      const dynamicPupil = this.config.geometry.pupilRadius + this.audioLevel * this.config.audioEffects.pupilResponse
+      let hasSignal = false
+      if (this.audio) {
+        const levels = this.getBandLevels(this.audio.getFrequencyData())
+        hasSignal = levels.bass > 0.01 || levels.mid > 0.01 || levels.high > 0.01
+        this.setAudioLevels(levels.bass, levels.mid, levels.high)
+      }
+      if (!hasSignal && this.currentState === 'speaking') {
+        // Fallback "talk pulse" when no analyser stream is available.
+        const t = this.uniforms.uTime.value
+        const talkPulse = 0.16 + (Math.sin(t * 11.0) * 0.5 + 0.5) * 0.34
+        this.audioLevel = THREE.MathUtils.lerp(this.audioLevel, talkPulse, 0.24)
+      }
+      const audioDrive = Math.pow(THREE.MathUtils.clamp(this.audioLevel, 0, 1), 0.72)
+      const dynamicPupil = this.config.geometry.pupilRadius + audioDrive * this.config.audioEffects.pupilResponse * 0.9
       this.uniforms.uPupilRadius.value = THREE.MathUtils.clamp(dynamicPupil, 0.12, 0.5)
-      this.uniforms.uShimmerStrength.value = this.config.animation.shimmerStrength + this.audioLevel * this.config.audioEffects.shimmerResponse
+      this.uniforms.uShimmerStrength.value = this.config.animation.shimmerStrength + audioDrive * this.config.audioEffects.shimmerResponse
+    }
+  }
+
+  private getBandLevels(frequencyData: Uint8Array): { bass: number; mid: number; high: number } {
+    const len = frequencyData.length
+    if (!len) return { bass: 0, mid: 0, high: 0 }
+    const bassEnd = Math.max(1, Math.floor(len * 0.12))
+    const midEnd = Math.max(bassEnd + 1, Math.floor(len * 0.45))
+    let bass = 0
+    let mid = 0
+    let high = 0
+    for (let i = 0; i < len; i++) {
+      const v = (frequencyData[i] ?? 0) / 255
+      if (i < bassEnd) bass += v
+      else if (i < midEnd) mid += v
+      else high += v
+    }
+    const bassCount = bassEnd
+    const midCount = Math.max(1, midEnd - bassEnd)
+    const highCount = Math.max(1, len - midEnd)
+    return {
+      bass: bass / bassCount,
+      mid: mid / midCount,
+      high: high / highCount,
     }
   }
 
   public setState(state: KwamiState): void {
+    this.currentState = state
     if (state === 'listening') {
       this.setShimmerStrength(0.22)
       this.setPatternFlow(0.36)
@@ -354,6 +480,11 @@ export class EyeIris {
     this.uniforms.uFiberDensity.value = value
   }
 
+  public setFiberSharpness(value: number): void {
+    this.config.detail.fiberSharpness = value
+    this.uniforms.uFiberSharpness.value = value
+  }
+
   public setRadialStreakStrength(value: number): void {
     this.config.detail.radialStreakStrength = value
     this.uniforms.uRadialStreakStrength.value = value
@@ -394,6 +525,21 @@ export class EyeIris {
     this.uniforms.uSectorMix.value = value
   }
 
+  public setPigmentMottleStrength(value: number): void {
+    this.config.detail.pigmentMottleStrength = value
+    this.uniforms.uPigmentMottleStrength.value = value
+  }
+
+  public setSpokesStrength(value: number): void {
+    this.config.detail.spokesStrength = value
+    this.uniforms.uSpokesStrength.value = value
+  }
+
+  public setInnerRingStrength(value: number): void {
+    this.config.detail.innerRingStrength = value
+    this.uniforms.uInnerRingStrength.value = value
+  }
+
   public setShimmerSpeed(value: number): void {
     this.config.animation.shimmerSpeed = value
   }
@@ -418,12 +564,32 @@ export class EyeIris {
     this.group.scale.setScalar(scale)
   }
 
+  public setFollowEnabled(enabled: boolean): void {
+    this.config.follow.enabled = enabled
+  }
+
+  public setFollowSensitivity(value: number): void {
+    this.config.follow.sensitivity = value
+  }
+
   public setAudioEnabled(enabled: boolean): void {
     this.config.audioEffects.enabled = enabled
   }
 
   public setAudioReactivity(reactivity: number): void {
     this.config.audioEffects.reactivity = reactivity
+  }
+
+  public setPupilResponse(value: number): void {
+    this.config.audioEffects.pupilResponse = value
+  }
+
+  public setShimmerResponse(value: number): void {
+    this.config.audioEffects.shimmerResponse = value
+  }
+
+  public setAudioSmoothing(value: number): void {
+    this.config.audioEffects.smoothing = value
   }
 
   public setAudioLevels(bass: number, mid: number, high: number): void {
@@ -448,6 +614,8 @@ export class EyeIris {
     if (this.disposed) return
     this.disposed = true
     this.stopAnimation()
+    this.removePointerMoveHandler?.()
+    this.removePointerMoveHandler = null
     this.irisMesh.geometry.dispose()
     this.irisMaterial.dispose()
     this.group.remove(this.irisMesh)

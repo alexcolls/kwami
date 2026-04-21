@@ -5,6 +5,7 @@ export {
   getDefaultEyeIrisDetail,
   getDefaultEyeIrisAnimation,
   getDefaultEyeIrisAudioEffects,
+  getDefaultEyeIrisFollow,
   eyeIrisPalettePresets,
   getEyeIrisPalette,
 } from './config'
@@ -15,6 +16,7 @@ export type {
   EyeIrisColorConfig,
   EyeIrisAnimationConfig,
   EyeIrisAudioEffects,
+  EyeIrisFollowConfig,
   EyeIrisConfig,
   EyeIrisOptions,
   EyeIrisUniforms,

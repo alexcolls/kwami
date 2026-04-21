@@ -4,6 +4,7 @@ import type {
   EyeIrisAnimationConfig,
   EyeIrisAudioEffects,
   EyeIrisDetailConfig,
+  EyeIrisFollowConfig,
   EyeIrisGeometryConfig,
   EyeIrisPalettePreset,
 } from './types'
@@ -58,6 +59,7 @@ export function getDefaultEyeIrisGeometry(): EyeIrisGeometryConfig {
 export function getDefaultEyeIrisDetail(): EyeIrisDetailConfig {
   return {
     fiberDensity: 168,
+    fiberSharpness: 1.0,
     radialStreakStrength: 0.98,
     collaretteStrength: 0.72,
     limbalIntensity: 1.02,
@@ -66,6 +68,9 @@ export function getDefaultEyeIrisDetail(): EyeIrisDetailConfig {
     furrowStrength: 0.72,
     ringContrast: 0.82,
     sectorMix: 0.56,
+    pigmentMottleStrength: 0.95,
+    spokesStrength: 0.9,
+    innerRingStrength: 0.92,
   }
 }
 
@@ -88,6 +93,13 @@ export function getDefaultEyeIrisAudioEffects(): EyeIrisAudioEffects {
   }
 }
 
+export function getDefaultEyeIrisFollow(): EyeIrisFollowConfig {
+  return {
+    enabled: true,
+    sensitivity: 1.0,
+  }
+}
+
 export function getDefaultEyeIrisConfig(): EyeIrisConfig {
   return {
     palettePreset: 'hazel',
@@ -96,6 +108,7 @@ export function getDefaultEyeIrisConfig(): EyeIrisConfig {
     color: eyeIrisPalettePresets.hazel,
     animation: getDefaultEyeIrisAnimation(),
     audioEffects: getDefaultEyeIrisAudioEffects(),
+    follow: getDefaultEyeIrisFollow(),
     scale: 5.0,
   }
 }

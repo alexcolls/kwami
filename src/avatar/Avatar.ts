@@ -134,7 +134,10 @@ export class Avatar {
 
   private initEyeIrisRenderer(): void {
     const eyeIrisConfig = this.config.eyeIris ?? {}
-    this.eyeIris = new EyeIris(this.scene.scene, this.scene.camera, this.scene.renderer, eyeIrisConfig)
+    this.eyeIris = new EyeIris(this.scene.scene, this.scene.camera, this.scene.renderer, {
+      ...eyeIrisConfig,
+      audio: this.audio,
+    })
   }
 
   private setupResizeHandling(): void {

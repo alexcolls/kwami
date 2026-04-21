@@ -70,6 +70,7 @@ export interface EyeIrisPresetState {
   geometry: { irisRadius: number; pupilRadius: number; limbalRingWidth: number }
   detail: {
     fiberDensity: number
+    fiberSharpness: number
     radialStreakStrength: number
     collaretteStrength: number
     limbalIntensity: number
@@ -78,6 +79,9 @@ export interface EyeIrisPresetState {
     furrowStrength: number
     ringContrast: number
     sectorMix: number
+    pigmentMottleStrength: number
+    spokesStrength: number
+    innerRingStrength: number
   }
   color: {
     base: string
@@ -668,7 +672,7 @@ export const avatarEyeIrisPresets: AvatarEyeIrisPreset[] = [
     eyeIris: {
       palettePreset: 'light-brown',
       geometry: { irisRadius: 0.92, pupilRadius: 0.24, limbalRingWidth: 0.07 },
-      detail: { fiberDensity: 162, radialStreakStrength: 0.92, collaretteStrength: 0.74, limbalIntensity: 1.0, noiseStrength: 0.24, cryptStrength: 0.94, furrowStrength: 0.78, ringContrast: 0.88, sectorMix: 0.52 },
+      detail: { fiberDensity: 162, fiberSharpness: 0.62, radialStreakStrength: 0.92, collaretteStrength: 0.74, limbalIntensity: 1.0, noiseStrength: 0.24, cryptStrength: 0.94, furrowStrength: 0.78, ringContrast: 0.88, sectorMix: 0.52, pigmentMottleStrength: 0.64, spokesStrength: 0.56, innerRingStrength: 0.7 },
       color: { base: '#8f4b24', secondary: '#b06a34', accent: '#e2a24d', limbal: '#3b1d10', collarette: '#a35a2c', crypt: '#2a160d', streak: '#f0b265' },
       animation: { shimmerSpeed: 0.14, shimmerStrength: 0.08, patternFlow: 0.22, patternRotation: 0.06 },
       scale: 5.0,
@@ -681,7 +685,7 @@ export const avatarEyeIrisPresets: AvatarEyeIrisPreset[] = [
     eyeIris: {
       palettePreset: 'hazel',
       geometry: { irisRadius: 0.94, pupilRadius: 0.22, limbalRingWidth: 0.06 },
-      detail: { fiberDensity: 170, radialStreakStrength: 0.98, collaretteStrength: 0.74, limbalIntensity: 1.02, noiseStrength: 0.28, cryptStrength: 0.92, furrowStrength: 0.74, ringContrast: 0.86, sectorMix: 0.58 },
+      detail: { fiberDensity: 170, fiberSharpness: 0.66, radialStreakStrength: 0.98, collaretteStrength: 0.74, limbalIntensity: 1.02, noiseStrength: 0.28, cryptStrength: 0.92, furrowStrength: 0.74, ringContrast: 0.86, sectorMix: 0.58, pigmentMottleStrength: 0.7, spokesStrength: 0.6, innerRingStrength: 0.72 },
       color: { base: '#6b4b23', secondary: '#a37229', accent: '#d0a73c', limbal: '#2b190a', collarette: '#845223', crypt: '#1d1208', streak: '#d6b45b' },
       animation: { shimmerSpeed: 0.16, shimmerStrength: 0.1, patternFlow: 0.24, patternRotation: 0.08 },
       scale: 5.0,
@@ -694,7 +698,7 @@ export const avatarEyeIrisPresets: AvatarEyeIrisPreset[] = [
     eyeIris: {
       palettePreset: 'blue-grey',
       geometry: { irisRadius: 0.94, pupilRadius: 0.21, limbalRingWidth: 0.07 },
-      detail: { fiberDensity: 182, radialStreakStrength: 1.04, collaretteStrength: 0.62, limbalIntensity: 1.08, noiseStrength: 0.2, cryptStrength: 1.0, furrowStrength: 0.8, ringContrast: 0.92, sectorMix: 0.44 },
+      detail: { fiberDensity: 182, fiberSharpness: 0.74, radialStreakStrength: 1.04, collaretteStrength: 0.62, limbalIntensity: 1.08, noiseStrength: 0.2, cryptStrength: 1.0, furrowStrength: 0.8, ringContrast: 0.92, sectorMix: 0.44, pigmentMottleStrength: 0.54, spokesStrength: 0.64, innerRingStrength: 0.62 },
       color: { base: '#73879b', secondary: '#9db2c4', accent: '#d6e3ef', limbal: '#2b3540', collarette: '#8398ab', crypt: '#1d2530', streak: '#dce7f0' },
       animation: { shimmerSpeed: 0.12, shimmerStrength: 0.08, patternFlow: 0.18, patternRotation: 0.05 },
       scale: 5.0,
@@ -707,7 +711,7 @@ export const avatarEyeIrisPresets: AvatarEyeIrisPreset[] = [
     eyeIris: {
       palettePreset: 'green-blue',
       geometry: { irisRadius: 0.94, pupilRadius: 0.2, limbalRingWidth: 0.065 },
-      detail: { fiberDensity: 190, radialStreakStrength: 1.06, collaretteStrength: 0.68, limbalIntensity: 1.04, noiseStrength: 0.24, cryptStrength: 0.96, furrowStrength: 0.82, ringContrast: 0.9, sectorMix: 0.66 },
+      detail: { fiberDensity: 190, fiberSharpness: 0.68, radialStreakStrength: 1.06, collaretteStrength: 0.68, limbalIntensity: 1.04, noiseStrength: 0.24, cryptStrength: 0.96, furrowStrength: 0.82, ringContrast: 0.9, sectorMix: 0.66, pigmentMottleStrength: 0.74, spokesStrength: 0.6, innerRingStrength: 0.68 },
       color: { base: '#2f8f84', secondary: '#4ac1aa', accent: '#a1e75c', limbal: '#12483e', collarette: '#3ea892', crypt: '#0d3129', streak: '#9fe5b2' },
       animation: { shimmerSpeed: 0.14, shimmerStrength: 0.09, patternFlow: 0.22, patternRotation: 0.07 },
       scale: 5.0,

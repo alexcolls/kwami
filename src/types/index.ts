@@ -125,6 +125,7 @@ export interface EyeIrisConfig {
   }
   detail?: {
     fiberDensity?: number
+    fiberSharpness?: number
     radialStreakStrength?: number
     collaretteStrength?: number
     limbalIntensity?: number
@@ -133,6 +134,9 @@ export interface EyeIrisConfig {
     furrowStrength?: number
     ringContrast?: number
     sectorMix?: number
+    pigmentMottleStrength?: number
+    spokesStrength?: number
+    innerRingStrength?: number
   }
   color?: {
     base?: string
@@ -155,6 +159,10 @@ export interface EyeIrisConfig {
     pupilResponse?: number
     shimmerResponse?: number
     smoothing?: number
+  }
+  follow?: {
+    enabled?: boolean
+    sensitivity?: number
   }
   scale?: number
 }
