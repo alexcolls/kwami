@@ -26,9 +26,7 @@ void main(){
 
   float angle=atan(vPosition.z,vPosition.x);
   float twist=angle+vPosition.y*4.5;
-  // Keep angular phase periodic across the atan seam (-PI..PI wrap).
-  // Non-integer multipliers can create a visible join line on the wrap.
-  float phase=twist*2.;
+  float phase=twist*1.5;
   vec3 weights=.5+.5*vec3(cos(phase),cos(phase-2.09439510239),cos(phase-4.18879020479));
   float total=weights.x+weights.y+weights.z+0.0001;
   weights/=total;
