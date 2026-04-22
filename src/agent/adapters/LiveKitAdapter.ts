@@ -102,7 +102,7 @@ export class LiveKitAdapter implements AgentAdapter {
  * Data message types from the backend agent
  */
 interface AgentDataMessage {
-  type: 'transcript' | 'agent_text' | 'state' | 'error' | 'metrics' | 'tool_call' | 'search_results' | 'remove_result' | 'nav_command'
+  type: 'transcript' | 'agent_text' | 'state' | 'error' | 'metrics' | 'tool_call' | 'search_results' | 'remove_result' | 'nav_command' | 'browser_session'
   toolCallId?: string
   function?: { name: string; arguments: string }
   transcript?: string
@@ -125,12 +125,15 @@ interface AgentDataMessage {
   answer?: string
   /** remove_result: agent asks client to remove card at this index */
   index?: number
-  /** nav_command fields */
+  /** nav_command / browser_session fields */
   action?: string
   url?: string
   description?: string
   inputText?: string
   element_id?: string
+  /** browser_session fields */
+  liveUrl?: string
+  title?: string
 }
 
 /**
@@ -642,6 +645,20 @@ class LiveKitPipeline implements AgentPipeline {
               description: data.description,
               text: data.inputText,
               elementId: data.element_id ?? (data as { elementId?: string }).elementId,
+            },
+          }))
+        }
+        break
+
+      case 'browser_session':
+        logger.info('Browser session event:', data.action, data.liveUrl?.slice(0, 60) || data.url)
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('kwami:browser_session', {
+            detail: {
+              action: data.action,  // 'open' | 'close' | 'update'
+              liveUrl: data.liveUrl,
+              url: data.url,
+              title: data.title,
             },
           }))
         }
