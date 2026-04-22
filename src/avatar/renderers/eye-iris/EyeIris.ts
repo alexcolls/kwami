@@ -193,14 +193,13 @@ export class EyeIris {
           float r = length(p);
 
           if (r > uIrisRadius) discard;
-          if (r < uPupilRadius) {
-            gl_FragColor = vec4(0.02, 0.02, 0.02, 1.0);
-            return;
-          }
 
           float irisSpan = max(0.001, uIrisRadius - uPupilRadius);
           float radial = clamp((r - uPupilRadius) / irisSpan, 0.0, 1.0);
           float invRadial = 1.0 - radial;
+          float pupilFeather = irisSpan * 0.08;
+          float pupilMask = 1.0 - smoothstep(uPupilRadius - pupilFeather, uPupilRadius + pupilFeather, r);
+          float irisMask = 1.0 - pupilMask;
 
           vec2 pNorm = (r > 0.00001) ? (p / r) : vec2(1.0, 0.0);
           float rot = uTime * uPatternRotation;
@@ -208,41 +207,60 @@ export class EyeIris {
           float sn = sin(rot);
           vec2 angleVec = mat2(cs, -sn, sn, cs) * pNorm;
           float angle = atan(angleVec.y, angleVec.x);
-          float radialFlow = radial + uTime * uPatternFlow * 0.12;
+          float radialFlow = radial + uTime * (0.06 + uPatternFlow * 0.18);
+          vec2 tissueDrift = vec2(
+            sin(uTime * 0.37 + angle * 2.3),
+            cos(uTime * 0.31 - angle * 2.1)
+          ) * (0.03 * (0.4 + 0.6 * uPatternFlow)) * (0.25 + 0.75 * radial);
+          vec2 sampleP = p + tissueDrift;
           float noiseWarp = fbm(vec2(
-            r * 8.0 + radialFlow * 4.0 + uNoiseStrength * 0.35,
+            r * 8.0 + radialFlow * 4.0 + uNoiseStrength * 0.35 + sampleP.x * 2.2,
             angleVec.x * (2.7 + uNoiseStrength * 0.8) + angleVec.y * (1.9 + uNoiseStrength * 0.6)
-          )) * 0.22;
+          )) * 0.3;
           float angleWarp = angle + noiseWarp * 0.6;
           float harmonic = max(1.0, floor(uFiberDensity + 0.5));
-          float harmonic2 = max(1.0, floor(harmonic * 0.53 + 0.5));
-          float harmonic3 = max(1.0, floor(harmonic * 1.9 + 0.5));
-          // Vary local strand frequency per angular/radial sector for non-uniform iris fibers.
+          // Non-periodic fiber synthesis: domain-warped radial streak ridges.
+          // Avoid strong sinusoidal bands that looked like "snake" lines.
           float angle01 = (angle + 3.141592653589793) / 6.283185307179586;
-          float sectorCell = floor(angle01 * 28.0);
-          float radialCell = floor(radial * 18.0);
+          float sectorCell = floor(angle01 * 34.0);
+          float radialCell = floor(radial * 22.0);
           float sectorRand = hash(vec2(sectorCell, radialCell));
-          float localFreq = mix(0.72, 1.38, sectorRand);
-          float branchWarp = (fbm(vec2(
-            angleVec.x * 9.0 + radialFlow * 5.2,
-            angleVec.y * 9.0 - radialFlow * 4.4
-          )) - 0.5) * (0.42 + 0.55 * uNoiseStrength);
-          float primaryFibers = ringBands(angleWarp + branchWarp, radialFlow, harmonic * localFreq, 28.0);
-          float secondaryFibers = ringBands(angleWarp + branchWarp * 1.5, radialFlow * 1.7, harmonic2 * mix(0.9, 1.45, sectorRand), 31.0);
-          float microFibers = ringBands(angleWarp + branchWarp * 2.1, radialFlow * 2.4, harmonic3 * mix(0.8, 1.6, sectorRand), 34.0);
-          float fibers = primaryFibers * 0.5 + secondaryFibers * 0.35 + microFibers * 0.15;
-          float fiberSharp = mix(1.25, 0.35, clamp(uFiberSharpness, 0.0, 1.5) / 1.5);
+          float radialWarp = (fbm(vec2(
+            angleVec.x * 8.0 + radialFlow * 4.0,
+            angleVec.y * 8.0 - radialFlow * 3.0
+          )) - 0.5) * (0.26 + 0.52 * uNoiseStrength);
+          float thetaWarp = (fbm(vec2(
+            angleVec.x * 14.0 + radialFlow * 7.0,
+            angleVec.y * 14.0 - radialFlow * 6.0
+          )) - 0.5) * 0.34;
+          float streakCoord = (angleWarp + thetaWarp) * (harmonic * mix(0.72, 1.35, sectorRand));
+          float radialCut = radialFlow * (38.0 + 24.0 * sectorRand) + radialWarp * 26.0;
+          float fiberCarrier = fbm(vec2(
+            cos(streakCoord) * 4.6 + radialCut,
+            sin(streakCoord) * 4.6 + radialCut * 0.35
+          ));
+          float ridgedA = 1.0 - abs(2.0 * fiberCarrier - 1.0);
+          float ridgedB = 1.0 - abs(2.0 * fbm(vec2(
+            cos(streakCoord * 1.7) * 7.0 + radialCut * 1.3,
+            sin(streakCoord * 1.7) * 7.0 - radialCut * 0.8
+          )) - 1.0);
+          float ridgedC = 1.0 - abs(2.0 * fbm(vec2(
+            cos(streakCoord * 2.6) * 10.0 + radialCut * 1.9,
+            sin(streakCoord * 2.6) * 10.0 - radialCut * 1.4
+          )) - 1.0);
+          float fibers = ridgedA * 0.42 + ridgedB * 0.34 + ridgedC * 0.24;
+          float fiberSharp = mix(1.45, 0.25, clamp(uFiberSharpness, 0.0, 1.5) / 1.5);
           fibers = pow(clamp(fibers, 0.0, 1.0), fiberSharp);
           float fiberContinuity = smoothstep(0.22, 0.9, fbm(vec2(
             angleVec.x * 15.0 + radialFlow * 19.0,
             angleVec.y * 15.0 - radialFlow * 13.0
           )));
-          float microCuts = smoothstep(0.72, 0.96, fbm(vec2(
+          float microCuts = smoothstep(0.66, 0.95, fbm(vec2(
             angleVec.x * 36.0 + radialFlow * 31.0,
             angleVec.y * 36.0 - radialFlow * 27.0
           )));
-          fibers *= mix(0.58, 1.22, fiberContinuity);
-          fibers *= (1.0 - microCuts * (0.14 + 0.24 * uNoiseStrength));
+          fibers *= mix(0.58, 1.34, fiberContinuity);
+          fibers *= (1.0 - microCuts * (0.22 + 0.3 * uNoiseStrength));
 
           // Crypts and furrows produce dark irregular tear-like details.
           float crypts = fbm(vec2(
@@ -253,8 +271,8 @@ export class EyeIris {
             angleVec.x * 24.0 + radialFlow * 8.0,
             angleVec.y * 24.0 + radialFlow * 17.0
           ));
-          float cryptMask = smoothstep(0.58, 0.86, crypts) * smoothstep(0.10, 0.82, radial);
-          float furrowMask = smoothstep(0.62, 0.9, furrows) * smoothstep(0.14, 0.94, radial);
+          float cryptMask = smoothstep(0.54, 0.84, crypts) * smoothstep(0.08, 0.86, radial);
+          float furrowMask = smoothstep(0.58, 0.9, furrows) * smoothstep(0.12, 0.96, radial);
 
           // Collarette: broken ring surrounding pupil with high contrast.
           float collaretteCenter = uPupilRadius + irisSpan * 0.18;
@@ -263,11 +281,11 @@ export class EyeIris {
             angleVec.x * 8.0 + radialFlow * 5.4,
             angleVec.y * 8.0 + radialFlow * 13.0
           ));
-          float collaretteMask = collaretteBand * (0.6 + 0.8 * collaretteBreakup);
+          float collaretteMask = collaretteBand * (0.55 + 0.95 * collaretteBreakup);
 
           // Limbal ring with organic breakup.
           float limbalBase = smoothstep(uIrisRadius - uLimbalRingWidth, uIrisRadius, r);
-          float limbalBreak = 0.72 + 0.4 * fbm(vec2(
+          float limbalBreak = 0.68 + 0.5 * fbm(vec2(
             angleVec.x * 6.5 + radialFlow * 3.0,
             angleVec.y * 6.5 + radialFlow * 11.5
           ));
@@ -279,24 +297,27 @@ export class EyeIris {
             angleVec.x * 1.2 + angleVec.y * 1.0 +
             fbm(vec2(radialFlow * 10.0 + angleVec.x * 3.0, angleVec.y * 4.0 + radialFlow * 2.0)) * 2.0
           );
-          float warmSpeckles = smoothstep(0.68, 0.93, fbm(vec2(
+          float warmSpeckles = smoothstep(0.64, 0.92, fbm(vec2(
             angleVec.x * 26.0 + radialFlow * 22.0,
             angleVec.y * 26.0 + radialFlow * 38.0
           )));
 
-          float sectors = 0.5 + 0.5 * sin(angleWarp * 9.0 + fbm(vec2(
-            angleVec.x * 3.0 + radialFlow * 1.5,
-            angleVec.y * 3.0 + radialFlow * 3.6
-          )) * 1.7);
-          float sectorTint = mix(1.0 - uSectorMix * 0.25, 1.0 + uSectorMix * 0.25, sectors);
-          float spokesRaw = 0.5 + 0.5 * sin(angleWarp * (harmonic * 0.42) + radialFlow * 45.0);
-          float spokesBreak = fbm(vec2(angleVec.x * 14.0 + radialFlow * 8.0, angleVec.y * 14.0 + radialFlow * 11.0));
-          float spokeMask = smoothstep(0.46, 0.86, spokesRaw * (0.76 + 0.52 * spokesBreak)) * smoothstep(0.04, 0.95, radial);
-          float pigmentMottle = fbm(vec2(
-            p.x * (12.0 + uNoiseStrength * 4.0) + radialFlow * 5.0,
-            p.y * (12.0 + uNoiseStrength * 4.0) - radialFlow * 4.0
+          float sectorTintNoise = fbm(vec2(
+            cos(angleWarp) * 2.8 + radial * 1.7 + uTime * 0.08,
+            sin(angleWarp) * 2.8 - radial * 1.1 - uTime * 0.05
           ));
-          float pigmentMask = smoothstep(0.36, 0.8, pigmentMottle) * smoothstep(0.08, 0.98, radial);
+          float sectorTint = mix(1.0 - uSectorMix * 0.18, 1.0 + uSectorMix * 0.18, sectorTintNoise);
+          float spokeNoise = fbm(vec2(
+            cos(angleWarp) * (4.0 + harmonic * 0.25) + radialFlow * 6.0,
+            sin(angleWarp) * (4.0 + harmonic * 0.25) - radialFlow * 5.0
+          ));
+          float spokeRidged = 1.0 - abs(2.0 * spokeNoise - 1.0);
+          float spokeMask = smoothstep(0.44, 0.9, spokeRidged) * smoothstep(0.05, 0.96, radial);
+          float pigmentMottle = fbm(vec2(
+            sampleP.x * (12.0 + uNoiseStrength * 4.0) + radialFlow * 5.0,
+            sampleP.y * (12.0 + uNoiseStrength * 4.0) - radialFlow * 4.0
+          ));
+          float pigmentMask = smoothstep(0.32, 0.82, pigmentMottle) * smoothstep(0.07, 0.99, radial);
           float innerRingCenter = uPupilRadius + irisSpan * 0.11;
           float innerRing = exp(-pow((r - innerRingCenter) / (irisSpan * 0.045), 2.0));
           float innerRingBreak = 0.62 + 0.42 * fbm(vec2(
@@ -304,42 +325,71 @@ export class EyeIris {
             angleVec.y * 16.0 + radialFlow * 15.0
           ));
           float innerRingMask = innerRing * innerRingBreak;
-          float cryptLineMap = smoothstep(0.55, 0.92, crypts) * smoothstep(0.08, 0.88, radial);
-          float furrowLineMap = smoothstep(0.58, 0.95, furrows) * smoothstep(0.2, 1.0, radial);
+          float cryptLineMap = smoothstep(0.5, 0.92, crypts) * smoothstep(0.07, 0.9, radial);
+          float furrowLineMap = smoothstep(0.54, 0.95, furrows) * smoothstep(0.16, 1.0, radial);
 
-          float shimmer = (sin(uTime * 1.2 + angleWarp * 18.0 + radialFlow * 8.0) * 0.5 + 0.5) * (0.35 + 0.65 * invRadial);
-          float microPits = smoothstep(0.72, 0.93, fbm(vec2(
-            angleVec.x * 34.0 + radialFlow * 58.0,
-            angleVec.y * 34.0 + radialFlow * 71.0
+          float shimmer = (sin(uTime * 0.82 + angleWarp * 20.0 + radialFlow * 9.0) * 0.5 + 0.5) * (0.28 + 0.72 * invRadial);
+          float microPits = smoothstep(0.62, 0.92, fbm(vec2(
+            angleVec.x * 46.0 + radialFlow * 74.0,
+            angleVec.y * 46.0 + radialFlow * 89.0
           )));
+          float poreGrain = fbm(vec2(
+            angleVec.x * 82.0 + radialFlow * 31.0,
+            angleVec.y * 82.0 - radialFlow * 27.0
+          ));
+          float poreMask = smoothstep(0.68, 0.96, poreGrain) * smoothstep(0.14, 0.96, radial);
+          float sphincterStriae = smoothstep(0.0, 0.42, invRadial) * smoothstep(0.18, 1.0, fibers);
+          float melaninRing = smoothstep(0.72, 1.0, radial);
+          float irisShadow = smoothstep(0.0, 0.62, radial) * (0.55 + 0.45 * (0.5 + 0.5 * pNorm.y));
 
           vec3 color = mix(uSecondaryColor, uBaseColor, pow(radial, 0.85));
-          color = mix(color, uStreakColor, fibers * uRadialStreakStrength * (0.22 + 0.28 * invRadial));
-          color = mix(color, uSecondaryColor, fibers * (0.08 + 0.14 * (1.0 - sectorRand)));
-          color = mix(color, uAccentColor, warmSpeckles * 0.22);
-          color += (depthBands - 0.5) * (0.12 + 0.2 * uRingContrast);
-          color = mix(color, uCollaretteColor, collaretteMask * uCollaretteStrength * 0.72);
-          color += warmSpeckles * uNoiseStrength * 0.34 * uAccentColor;
-          color = mix(color, uCryptColor, cryptMask * uCryptStrength * 0.65);
-          color = mix(color, uStreakColor, spokeMask * uSpokesStrength * 0.95);
-          color = mix(color, uAccentColor, pigmentMask * uPigmentMottleStrength * 0.62);
-          color = mix(color, uLimbalColor, innerRingMask * uInnerRingStrength * 0.78);
-          color = mix(color, uCryptColor, cryptLineMap * uCryptStrength * 0.55);
-          color -= furrowLineMap * (0.03 + 0.18 * uFurrowStrength);
-          color -= furrowMask * (0.05 + 0.22 * uFurrowStrength);
-          color += shimmer * uShimmerStrength * 0.09;
-          color -= microPits * 0.08 * (0.6 + 0.4 * uNoiseStrength);
+          color = mix(color, uStreakColor, fibers * uRadialStreakStrength * (0.18 + 0.46 * invRadial));
+          color = mix(color, uSecondaryColor, fibers * (0.1 + 0.2 * (1.0 - sectorRand)));
+          color = mix(color, uAccentColor, warmSpeckles * 0.26);
+          color += (depthBands - 0.5) * (0.16 + 0.26 * uRingContrast);
+          color = mix(color, uCollaretteColor, collaretteMask * uCollaretteStrength * 0.92);
+          color += warmSpeckles * uNoiseStrength * 0.42 * uAccentColor;
+          color = mix(color, uCryptColor, cryptMask * uCryptStrength * 0.78);
+          color = mix(color, uStreakColor, spokeMask * uSpokesStrength * 0.98);
+          color = mix(color, uAccentColor, pigmentMask * uPigmentMottleStrength * 0.74);
+          color = mix(color, uLimbalColor, innerRingMask * uInnerRingStrength * 0.86);
+          color = mix(color, uCryptColor, cryptLineMap * uCryptStrength * 0.66);
+          color -= furrowLineMap * (0.05 + 0.24 * uFurrowStrength);
+          color -= furrowMask * (0.07 + 0.28 * uFurrowStrength);
+          color -= melaninRing * 0.18;
+          color += uCollaretteColor * (0.08 + 0.3 * uCollaretteStrength) * sphincterStriae;
+          color += shimmer * uShimmerStrength * 0.06;
+          color -= microPits * 0.11 * (0.65 + 0.45 * uNoiseStrength);
+          color -= poreMask * 0.07;
           color *= sectorTint;
           color = mix(color, uLimbalColor, limbalMask * uLimbalIntensity);
+          color *= 0.88 + 0.12 * irisShadow;
 
           // Slight center darkening and peripheral falloff for natural depth.
           float innerShade = smoothstep(uPupilRadius, uPupilRadius + irisSpan * 0.28, r);
           float outerShade = 1.0 - smoothstep(uIrisRadius - irisSpan * 0.25, uIrisRadius, r);
-          color *= 0.92 + 0.08 * innerShade;
-          color *= 0.9 + 0.1 * outerShade;
+          color *= 0.88 + 0.12 * innerShade;
+          color *= 0.86 + 0.14 * outerShade;
           color = clamp(color, 0.0, 1.0);
 
-          gl_FragColor = vec4(color, 1.0);
+          // Add a thin corneal sheen and catchlights so the iris reads less "flat".
+          float cornea = sqrt(max(0.0, 1.0 - clamp((r / uIrisRadius) * (r / uIrisRadius), 0.0, 1.0)));
+          vec3 normal = normalize(vec3(pNorm * sqrt(max(0.0, 1.0 - cornea * cornea)), cornea));
+          vec3 lightA = normalize(vec3(-0.28, 0.42, 0.86));
+          vec3 lightB = normalize(vec3(0.34, -0.22, 0.9));
+          vec3 viewDir = vec3(0.0, 0.0, 1.0);
+          float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 2.6);
+          float specA = pow(max(dot(normal, lightA), 0.0), 72.0);
+          float specB = pow(max(dot(normal, lightB), 0.0), 120.0) * 0.68;
+          float corneaHighlight = (specA + specB) * (0.18 + 0.2 * (0.5 + 0.5 * sin(uTime * 0.32)));
+
+          vec3 pupilColor = vec3(0.018, 0.018, 0.02);
+          pupilColor += vec3(0.012, 0.01, 0.008) * (1.0 - cornea);
+          vec3 mixed = mix(pupilColor, color, irisMask);
+          mixed += vec3(0.82, 0.88, 0.96) * corneaHighlight * (0.3 + 0.7 * irisMask);
+          mixed += vec3(0.06, 0.09, 0.14) * fresnel * (0.45 + 0.55 * irisMask);
+
+          gl_FragColor = vec4(clamp(mixed, 0.0, 1.0), 1.0);
         }
       `,
     })
@@ -369,16 +419,20 @@ export class EyeIris {
     if (this.disposed) return
     const dt = deltaTime ?? this.clock.getDelta()
     this.uniforms.uTime.value += dt * (0.5 + this.config.animation.shimmerSpeed)
+    const t = this.uniforms.uTime.value
+    const idleDriftX = Math.sin(t * 0.42) * 0.02 + Math.sin(t * 0.93) * 0.008
+    const idleDriftY = Math.cos(t * 0.39) * 0.017 + Math.sin(t * 0.88) * 0.007
     if (this.config.follow.enabled) {
       this.followCurrent.lerp(this.followTarget, 0.11)
-      this.irisMesh.rotation.y = this.followCurrent.x
-      this.irisMesh.rotation.x = -this.followCurrent.y
+      this.irisMesh.rotation.y = this.followCurrent.x + idleDriftX * 0.45
+      this.irisMesh.rotation.x = this.followCurrent.y + idleDriftY * 0.45
     } else {
-      this.followTarget.set(0, 0)
+      this.followTarget.set(idleDriftX, idleDriftY)
       this.followCurrent.lerp(this.followTarget, 0.15)
       this.irisMesh.rotation.y = this.followCurrent.x
-      this.irisMesh.rotation.x = -this.followCurrent.y
+      this.irisMesh.rotation.x = this.followCurrent.y
     }
+    this.irisMesh.rotation.z = Math.sin(t * 0.31) * (0.006 + this.config.animation.patternRotation * 0.04)
     if (this.config.audioEffects.enabled) {
       let hasSignal = false
       if (this.audio) {

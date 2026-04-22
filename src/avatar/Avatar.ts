@@ -26,6 +26,7 @@ export class Avatar {
   private currentState: KwamiState = 'idle'
   private resizeObserver: ResizeObserver | null = null
   private currentRenderer: AvatarRendererType = 'blob-xyz'
+  private sceneControlsInitiallyEnabled = false
 
   constructor(canvas: HTMLCanvasElement, config?: AvatarConfig) {
     this.canvas = canvas
@@ -36,6 +37,7 @@ export class Avatar {
 
     // Initialize scene
     this.scene = new Scene(canvas, config?.scene)
+    this.sceneControlsInitiallyEnabled = this.scene.controls?.enabled ?? false
 
     // Initialize renderer
     this.initRenderer()
@@ -64,6 +66,12 @@ export class Avatar {
       this.currentRenderer = 'blob-xyz'
       this.initBlobXyzRenderer()
     }
+    this.updateSceneControlsForRenderer()
+  }
+
+  private updateSceneControlsForRenderer(): void {
+    if (!this.scene.controls) return
+    this.scene.controls.enabled = this.sceneControlsInitiallyEnabled && this.currentRenderer !== 'eye-iris'
   }
 
   private initBlobXyzRenderer(): void {
@@ -263,6 +271,7 @@ export class Avatar {
     } else if (newRenderer === 'eye-iris') {
       this.initEyeIrisRenderer()
     }
+    this.updateSceneControlsForRenderer()
 
     // Restore state
     this.currentState = 'idle' // Reset first
