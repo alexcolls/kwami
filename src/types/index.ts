@@ -163,6 +163,8 @@ export interface EyeIrisConfig {
   follow?: {
     enabled?: boolean
     sensitivity?: number
+    pupilMotion?: boolean
+    pupilMotionStrength?: number
   }
   scale?: number
 }

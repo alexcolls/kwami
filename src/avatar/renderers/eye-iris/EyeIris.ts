@@ -30,6 +30,10 @@ export class EyeIris {
   private followTarget = new THREE.Vector2(0, 0)
   private followCurrent = new THREE.Vector2(0, 0)
   private removePointerMoveHandler: (() => void) | null = null
+  private lastPointerClientX: number | null = null
+  private lastPointerClientY: number | null = null
+  /** Smoothed 0–1 from recent pointer speed; drives pupil dilation. */
+  private pointerMotionEnergy = 0
 
   constructor(
     scene: THREE.Scene,
@@ -78,6 +82,17 @@ export class EyeIris {
         THREE.MathUtils.clamp(x * range, -0.5, 0.5),
         THREE.MathUtils.clamp(y * range, -0.5, 0.5),
       )
+
+      if (this.config.follow.pupilMotion) {
+        if (this.lastPointerClientX !== null && this.lastPointerClientY !== null) {
+          const dx = event.clientX - this.lastPointerClientX
+          const dy = event.clientY - this.lastPointerClientY
+          const speed = Math.hypot(dx, dy)
+          this.pointerMotionEnergy = Math.min(1, this.pointerMotionEnergy + speed * 0.0075)
+        }
+        this.lastPointerClientX = event.clientX
+        this.lastPointerClientY = event.clientY
+      }
     }
     window.addEventListener('pointermove', onPointerMove, { passive: true })
     this.removePointerMoveHandler = () => window.removeEventListener('pointermove', onPointerMove)
@@ -433,6 +448,17 @@ export class EyeIris {
       this.irisMesh.rotation.x = this.followCurrent.y
     }
     this.irisMesh.rotation.z = Math.sin(t * 0.31) * (0.006 + this.config.animation.patternRotation * 0.04)
+
+    if (this.config.follow.pupilMotion) {
+      this.pointerMotionEnergy *= 0.93
+    } else {
+      this.pointerMotionEnergy = 0
+    }
+    const motionBoost = this.config.follow.pupilMotion
+      ? this.pointerMotionEnergy * this.config.follow.pupilMotionStrength
+      : 0
+    const basePupil = this.config.geometry.pupilRadius
+
     if (this.config.audioEffects.enabled) {
       let hasSignal = false
       if (this.audio) {
@@ -447,9 +473,12 @@ export class EyeIris {
         this.audioLevel = THREE.MathUtils.lerp(this.audioLevel, talkPulse, 0.24)
       }
       const audioDrive = Math.pow(THREE.MathUtils.clamp(this.audioLevel, 0, 1), 0.72)
-      const dynamicPupil = this.config.geometry.pupilRadius + audioDrive * this.config.audioEffects.pupilResponse * 0.9
+      const dynamicPupil =
+        basePupil + audioDrive * this.config.audioEffects.pupilResponse * 0.9 + motionBoost
       this.uniforms.uPupilRadius.value = THREE.MathUtils.clamp(dynamicPupil, 0.12, 0.5)
       this.uniforms.uShimmerStrength.value = this.config.animation.shimmerStrength + audioDrive * this.config.audioEffects.shimmerResponse
+    } else {
+      this.uniforms.uPupilRadius.value = THREE.MathUtils.clamp(basePupil + motionBoost, 0.12, 0.5)
     }
   }
 
@@ -624,6 +653,19 @@ export class EyeIris {
 
   public setFollowSensitivity(value: number): void {
     this.config.follow.sensitivity = value
+  }
+
+  public setFollowPupilMotion(enabled: boolean): void {
+    this.config.follow.pupilMotion = enabled
+    if (!enabled) {
+      this.pointerMotionEnergy = 0
+      this.lastPointerClientX = null
+      this.lastPointerClientY = null
+    }
+  }
+
+  public setFollowPupilMotionStrength(value: number): void {
+    this.config.follow.pupilMotionStrength = THREE.MathUtils.clamp(value, 0, 0.35)
   }
 
   public setAudioEnabled(enabled: boolean): void {

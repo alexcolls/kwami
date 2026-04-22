@@ -52,6 +52,10 @@ export interface EyeIrisAudioEffects {
 export interface EyeIrisFollowConfig {
   enabled: boolean
   sensitivity: number
+  /** Brief pupil dilation from fast pointer movement (in addition to gaze follow). */
+  pupilMotion: boolean
+  /** Max extra radius added when pointer motion peaks (typical 0.06–0.2). */
+  pupilMotionStrength: number
 }
 
 export interface EyeIrisConfig {

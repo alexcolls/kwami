@@ -97,6 +97,8 @@ export function getDefaultEyeIrisFollow(): EyeIrisFollowConfig {
   return {
     enabled: true,
     sensitivity: 1.0,
+    pupilMotion: true,
+    pupilMotionStrength: 0.12,
   }
 }
 
