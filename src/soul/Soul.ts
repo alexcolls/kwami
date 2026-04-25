@@ -30,6 +30,7 @@ export class Soul {
       responseLength: 'medium',
       emotionalTone: 'warm',
       emotionalTraits: this.getDefaultEmotionalTraits(),
+      emotionalTraitWeights: this.getDefaultEmotionalTraitWeights(),
     }
   }
 
@@ -48,6 +49,21 @@ export class Soul {
     }
   }
 
+  private getDefaultEmotionalTraitWeights(): Record<string, number> {
+    return {
+      happiness: 1.1,
+      energy: 1.0,
+      confidence: 1.2,
+      calmness: 1.25,
+      optimism: 1.05,
+      socialness: 0.9,
+      creativity: 0.9,
+      patience: 1.15,
+      empathy: 1.35,
+      curiosity: 0.95,
+    }
+  }
+
   /**
    * Get the complete system prompt for AI configuration
    * Optionally includes memory context
@@ -61,6 +77,7 @@ export class Soul {
       responseLength,
       emotionalTone,
       emotionalTraits,
+      emotionalTraitWeights,
     } = this.config
 
     let prompt = systemPrompt ?? ''
@@ -115,17 +132,38 @@ export class Soul {
         creativity: ['more literal', 'more creative'],
         patience: ['more brisk', 'more patient'],
       }
-      const directives: string[] = []
+      const traitWeights: Record<string, number> = {
+        ...this.getDefaultEmotionalTraitWeights(),
+        ...Object.fromEntries(
+          Object.entries(emotionalTraitWeights ?? {}).map(([key, value]) => [
+            key,
+            typeof value === 'number' ? Math.max(0.5, Math.min(1.5, value)) : value,
+          ]),
+        ),
+      }
+      const weightedTraits: Array<{ magnitude: number; directive: string }> = []
       Object.entries(emotionalTraits).forEach(([key, value]) => {
         if (!(key in traitLabels)) return
-        if (typeof value !== 'number' || Math.abs(value) < 20) return
+        if (typeof value !== 'number') return
+        const weightedScore = value * (traitWeights[key] ?? 1)
+        const magnitude = Math.min(100, Math.abs(weightedScore))
+        if (magnitude < 10) return
         const [lowLabel, highLabel] = traitLabels[key]
-        const direction = value > 0 ? highLabel : lowLabel
-        const strength = Math.abs(value) < 50 ? 'slightly' : 'noticeably'
-        directives.push(`${strength} ${direction}`)
+        const direction = weightedScore > 0 ? highLabel : lowLabel
+        let strength = 'slightly'
+        if (magnitude >= 85) {
+          strength = 'very strongly'
+        } else if (magnitude >= 60) {
+          strength = 'strongly'
+        } else if (magnitude >= 35) {
+          strength = 'moderately'
+        }
+        weightedTraits.push({ magnitude, directive: `${strength} ${direction}` })
       })
-      if (directives.length > 0) {
-        prompt += `\n\nVoice emotion profile: ${directives.slice(0, 4).join(', ')}. Keep this consistent without sounding exaggerated.`
+      if (weightedTraits.length > 0) {
+        weightedTraits.sort((a, b) => b.magnitude - a.magnitude)
+        const directives = weightedTraits.slice(0, 5).map((item) => item.directive)
+        prompt += `\n\nVoice emotion profile: ${directives.join(', ')}. Keep this consistent without sounding exaggerated.`
       }
     }
 

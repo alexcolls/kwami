@@ -612,9 +612,23 @@ export interface SoulConfig {
     | 'serious'
     | 'compassionate'
   emotionalTraits?: EmotionalTraits
+  emotionalTraitWeights?: EmotionalTraitWeights
 }
 
 export interface EmotionalTraits {
+  happiness?: number
+  energy?: number
+  confidence?: number
+  calmness?: number
+  optimism?: number
+  socialness?: number
+  creativity?: number
+  patience?: number
+  empathy?: number
+  curiosity?: number
+}
+
+export interface EmotionalTraitWeights {
   happiness?: number
   energy?: number
   confidence?: number
