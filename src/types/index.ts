@@ -602,7 +602,15 @@ export interface SoulConfig {
   language?: string
   conversationStyle?: string
   responseLength?: 'short' | 'medium' | 'long'
-  emotionalTone?: 'neutral' | 'warm' | 'enthusiastic' | 'calm'
+  emotionalTone?:
+    | 'neutral'
+    | 'warm'
+    | 'enthusiastic'
+    | 'calm'
+    | 'playful'
+    | 'confident'
+    | 'serious'
+    | 'compassionate'
   emotionalTraits?: EmotionalTraits
 }
 

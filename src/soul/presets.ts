@@ -10,7 +10,15 @@ export interface SoulPreset {
   language: string
   conversationStyle: string
   responseLength: 'short' | 'medium' | 'long'
-  emotionalTone: 'neutral' | 'warm' | 'enthusiastic' | 'calm'
+  emotionalTone:
+    | 'neutral'
+    | 'warm'
+    | 'enthusiastic'
+    | 'calm'
+    | 'playful'
+    | 'confident'
+    | 'serious'
+    | 'compassionate'
   icon: string
   category: 'positive' | 'creative' | 'challenging' | 'contemplative'
   color: string

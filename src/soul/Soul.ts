@@ -60,6 +60,7 @@ export class Soul {
       conversationStyle,
       responseLength,
       emotionalTone,
+      emotionalTraits,
     } = this.config
 
     let prompt = systemPrompt ?? ''
@@ -91,8 +92,41 @@ export class Soul {
         warm: 'Express warmth and friendliness in your interactions.',
         enthusiastic: 'Show enthusiasm and energy in your responses.',
         calm: 'Maintain a calm, soothing demeanor.',
+        playful: 'Use a light, playful tone while still being helpful and clear.',
+        confident: 'Speak with confident, decisive phrasing without sounding arrogant.',
+        serious: 'Use a serious, focused tone and avoid casual language.',
+        compassionate: 'Respond with compassionate, emotionally supportive language.',
+      } as const
+      if (emotionalTone in toneGuide) {
+        prompt += `\n\n${toneGuide[emotionalTone as keyof typeof toneGuide]}`
       }
-      prompt += `\n\n${toneGuide[emotionalTone]}`
+    }
+
+    if (emotionalTraits) {
+      const traitLabels: Record<string, [string, string]> = {
+        happiness: ['sadder', 'happier'],
+        energy: ['more low-energy', 'more energetic'],
+        confidence: ['more tentative', 'more confident'],
+        calmness: ['more tense', 'calmer'],
+        optimism: ['more cautious', 'more optimistic'],
+        socialness: ['more reserved', 'more social'],
+        empathy: ['more detached', 'more empathic'],
+        curiosity: ['less exploratory', 'more curious'],
+        creativity: ['more literal', 'more creative'],
+        patience: ['more brisk', 'more patient'],
+      }
+      const directives: string[] = []
+      Object.entries(emotionalTraits).forEach(([key, value]) => {
+        if (!(key in traitLabels)) return
+        if (typeof value !== 'number' || Math.abs(value) < 20) return
+        const [lowLabel, highLabel] = traitLabels[key]
+        const direction = value > 0 ? highLabel : lowLabel
+        const strength = Math.abs(value) < 50 ? 'slightly' : 'noticeably'
+        directives.push(`${strength} ${direction}`)
+      })
+      if (directives.length > 0) {
+        prompt += `\n\nVoice emotion profile: ${directives.slice(0, 4).join(', ')}. Keep this consistent without sounding exaggerated.`
+      }
     }
 
     // Include memory context if provided
@@ -181,14 +215,33 @@ export class Soul {
   /**
    * Get emotional tone
    */
-  getEmotionalTone(): 'neutral' | 'warm' | 'enthusiastic' | 'calm' | undefined {
+  getEmotionalTone():
+    | 'neutral'
+    | 'warm'
+    | 'enthusiastic'
+    | 'calm'
+    | 'playful'
+    | 'confident'
+    | 'serious'
+    | 'compassionate'
+    | undefined {
     return this.config.emotionalTone
   }
 
   /**
    * Set emotional tone
    */
-  setEmotionalTone(tone: 'neutral' | 'warm' | 'enthusiastic' | 'calm'): void {
+  setEmotionalTone(
+    tone:
+      | 'neutral'
+      | 'warm'
+      | 'enthusiastic'
+      | 'calm'
+      | 'playful'
+      | 'confident'
+      | 'serious'
+      | 'compassionate'
+  ): void {
     this.config.emotionalTone = tone
   }
 
