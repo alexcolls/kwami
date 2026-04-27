@@ -30,7 +30,6 @@ export class Soul {
       responseLength: 'medium',
       emotionalTone: 'warm',
       emotionalTraits: this.getDefaultEmotionalTraits(),
-      emotionalTraitWeights: this.getDefaultEmotionalTraitWeights(),
     }
   }
 
@@ -49,21 +48,6 @@ export class Soul {
     }
   }
 
-  private getDefaultEmotionalTraitWeights(): Record<string, number> {
-    return {
-      happiness: 1.1,
-      energy: 1.0,
-      confidence: 1.2,
-      calmness: 1.25,
-      optimism: 1.05,
-      socialness: 0.9,
-      creativity: 0.9,
-      patience: 1.15,
-      empathy: 1.35,
-      curiosity: 0.95,
-    }
-  }
-
   /**
    * Get the complete system prompt for AI configuration
    * Optionally includes memory context
@@ -77,7 +61,6 @@ export class Soul {
       responseLength,
       emotionalTone,
       emotionalTraits,
-      emotionalTraitWeights,
     } = this.config
 
     let prompt = systemPrompt ?? ''
@@ -133,13 +116,16 @@ export class Soul {
         patience: ['more brisk', 'more patient'],
       }
       const traitWeights: Record<string, number> = {
-        ...this.getDefaultEmotionalTraitWeights(),
-        ...Object.fromEntries(
-          Object.entries(emotionalTraitWeights ?? {}).map(([key, value]) => [
-            key,
-            typeof value === 'number' ? Math.max(0.5, Math.min(1.5, value)) : value,
-          ]),
-        ),
+        happiness: 1.1,
+        energy: 1.0,
+        confidence: 1.2,
+        calmness: 1.25,
+        optimism: 1.05,
+        socialness: 0.9,
+        empathy: 1.35,
+        curiosity: 0.95,
+        creativity: 0.9,
+        patience: 1.15,
       }
       const weightedTraits: Array<{ magnitude: number; directive: string }> = []
       Object.entries(emotionalTraits).forEach(([key, value]) => {
