@@ -23,7 +23,7 @@ export default [
         ...globals.node,
       },
       parserOptions: {
-        project: ['./tsconfig.json', './pg/tsconfig.json'],
+        project: ['./tsconfig.json'],
       },
     },
     rules: {

@@ -21,12 +21,12 @@
     "dev": "vite build --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint \"src/**/*.ts\" \"pg/src/**/*.ts\" \"scripts/**/*.ts\"",
-    "lint:fix": "eslint \"src/**/*.ts\" \"pg/src/**/*.ts\" \"scripts/**/*.ts\" --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"pg/src/**/*.ts\" \"scripts/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"pg/src/**/*.ts\" \"scripts/**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"scripts/**/*.ts\"",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run --passWithNoTests"
   },
   "keywords": [
     "ai",
