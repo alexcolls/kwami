@@ -76,15 +76,14 @@ export interface KwamiCallbacks {
 // Avatar
 // -----------------------------------------------------------------------------
 
-export type AvatarRendererType = 'blob-xyz' | 'orbital-shards' | 'stars-genesis' | 'crystal-ball' | 'black-hole'
+export type AvatarRendererType = 'blob-xyz' | 'black-hole' | 'particles-face' | 'eye-iris'
 
 export interface AvatarConfig {
   renderer?: AvatarRendererType
   blob?: BlobXyzConfig
-  orbitalShards?: OrbitalShardsConfig
-  starsGenesis?: StarsGenesisConfig
-  crystalBall?: CrystalBallConfig
   blackHole?: BlackHoleConfig
+  particlesFace?: ParticlesFaceConfig
+  eyeIris?: EyeIrisConfig
   scene?: SceneConfig
   interaction?: InteractionConfig
   audio?: {
@@ -93,6 +92,81 @@ export interface AvatarConfig {
     autoInitialize?: boolean
     volume?: number
   }
+}
+
+export interface ParticlesFaceConfig {
+  particleCount?: number
+  particleSize?: number
+  faceScale?: number
+  color?: string
+  secondaryColor?: string
+  opacity?: number
+  mouthAmplitude?: number
+  breathingSpeed?: number
+  breathingAmplitude?: number
+  driftSpeed?: number
+  driftAmplitude?: number
+  speakingReactivity?: number
+  listeningPulse?: number
+  thinkingSpeed?: number
+  ambientParticles?: number
+  ambientRadius?: number
+  depthSpread?: number
+}
+
+export type EyeIrisPalettePreset = 'light-brown' | 'hazel' | 'blue-grey' | 'green-blue'
+
+export interface EyeIrisConfig {
+  palettePreset?: EyeIrisPalettePreset
+  geometry?: {
+    irisRadius?: number
+    pupilRadius?: number
+    limbalRingWidth?: number
+  }
+  detail?: {
+    fiberDensity?: number
+    fiberSharpness?: number
+    radialStreakStrength?: number
+    collaretteStrength?: number
+    limbalIntensity?: number
+    noiseStrength?: number
+    cryptStrength?: number
+    furrowStrength?: number
+    ringContrast?: number
+    sectorMix?: number
+    pigmentMottleStrength?: number
+    spokesStrength?: number
+    innerRingStrength?: number
+  }
+  color?: {
+    base?: string
+    secondary?: string
+    accent?: string
+    limbal?: string
+    collarette?: string
+    crypt?: string
+    streak?: string
+  }
+  animation?: {
+    shimmerSpeed?: number
+    shimmerStrength?: number
+    patternFlow?: number
+    patternRotation?: number
+  }
+  audioEffects?: {
+    enabled?: boolean
+    reactivity?: number
+    pupilResponse?: number
+    shimmerResponse?: number
+    smoothing?: number
+  }
+  follow?: {
+    enabled?: boolean
+    sensitivity?: number
+    pupilMotion?: boolean
+    pupilMotionStrength?: number
+  }
+  scale?: number
 }
 
 export interface AudioConfig {
@@ -110,16 +184,14 @@ export interface AvatarRenderer {
 // BlobXyz Config (moved from blob-xyz/types.ts for top-level export)
 // -----------------------------------------------------------------------------
 
-export type BlobXyzSkin = 'tricolor'
-export type TricolorSubtype = 'poles' | 'donut' | 'vintage'
-
-export type BlobXyzSkinSelection = {
-  skin: 'tricolor'
-  subtype?: TricolorSubtype
-}
+export type BlobXyzSkin =
+  | 'radial' | 'banded' | 'striped' | 'marble' | 'fresnel' | 'iridescent' | 'spiral' | 'plasma' | 'gradient'
+  | 'matte' | 'glossy' | 'metallic' | 'subsurface'
+  | 'chrome' | 'clay' | 'jade' | 'toon-matcap' | 'hologram'
+  | 'flat' | 'stepped' | 'halftone' | 'outlined'
 
 export interface BlobXyzConfig {
-  skin?: BlobXyzSkinSelection
+  skin?: BlobXyzSkin
   resolution?: number
   spikes?: { x: number; y: number; z: number }
   time?: { x: number; y: number; z: number }
@@ -137,6 +209,10 @@ export interface BlobXyzConfig {
   transition?: {
     speed?: number
     thinkingDuration?: number
+  }
+  cursorFollow?: {
+    enabled?: boolean
+    sensitivity?: number
   }
 }
 
@@ -160,7 +236,7 @@ export interface InteractionActionConfig {
   action: InteractionAction
   enabled?: boolean
   customHandler?: () => void | Promise<void>
-  rendererTarget?: 'blob-xyz' | 'orbital-shards'
+  rendererTarget?: 'blob-xyz'
 }
 
 export interface InteractionConfig {
@@ -178,233 +254,6 @@ export interface InteractionConfig {
     highlightOnHover?: boolean
     cursorStyle?: string
   }
-}
-
-// -----------------------------------------------------------------------------
-// Orbital Shards Config
-// -----------------------------------------------------------------------------
-
-export type OrbitalShardsFormation = 'constellation' | 'helix' | 'vortex'
-export type OrbitalShardsCoreStyle = 'plasma' | 'nebula' | 'pulse'
-
-export interface OrbitalShardsFormationSelection {
-  formation: OrbitalShardsFormation
-  coreStyle?: OrbitalShardsCoreStyle
-}
-
-export interface OrbitalShardsConfig {
-  formation?: OrbitalShardsFormationSelection
-  shards?: {
-    count?: number
-    sizeRange?: [number, number]
-    orbitRadius?: [number, number]
-    rotationSpeed?: number
-    opacityRange?: [number, number]
-  }
-  core?: {
-    size?: number
-    glowIntensity?: number
-    pulseSpeed?: number
-    innerColor?: string
-    outerColor?: string
-  }
-  colors?: {
-    primary: string
-    secondary: string
-    accent: string
-  }
-  audioEffects?: {
-    bassOrbitBoost?: number
-    midRotationBoost?: number
-    highGlowBoost?: number
-    reactivity?: number
-    smoothing?: number
-    enabled?: boolean
-  }
-  particleCount?: number
-  scale?: number
-  rotation?: { x: number; y: number; z: number }
-}
-
-// -----------------------------------------------------------------------------
-// Stars Genesis Config
-// -----------------------------------------------------------------------------
-
-export interface StarsGenesisConfig {
-  /** Number of stars */
-  starCount?: number
-  /** Physics configuration */
-  physics?: {
-    /** Return force to formation (0-1) */
-    returnForce?: number
-    /** Damping/friction (0-1) */
-    damping?: number
-    /** Explosion force on click */
-    explosionForce?: number
-    /** Explosion radius */
-    explosionRadius?: number
-    /** Leader movement speed */
-    leaderSpeed?: number
-    /** Delay between stars following leader */
-    followDelay?: number
-    /** Mouse influence radius */
-    mouseInfluence?: number
-    /** Mouse repulsion strength */
-    mouseRepulsion?: number
-  }
-  /** Visual configuration */
-  visual?: {
-    /** Base star color */
-    color?: string
-    /** Glow color */
-    glowColor?: string
-    /** Star size */
-    starSize?: number
-    /** Size variation */
-    sizeVariation?: number
-    /** Opacity (0-1) */
-    opacity?: number
-    /** Glow intensity */
-    glowIntensity?: number
-    /** Brightness variation */
-    brightnessVariation?: number
-    /** Star sharpness (0=soft, 1=sharp) */
-    sharpness?: number
-  }
-  /** Formation configuration */
-  formation?: {
-    /** Formation type */
-    type?: 'sphere' | 'disc' | 'ring' | 'cube'
-    /** Radius of the formation */
-    radius?: number
-    /** Density distribution */
-    density?: 'uniform' | 'center-heavy' | 'edge-heavy'
-    /** Noise amount for organic look */
-    noise?: number
-  }
-  /** Animation configuration */
-  animation?: {
-    /** Enable idle animations */
-    enabled?: boolean
-    /** Breathing/pulse animation */
-    breathing?: {
-      enabled?: boolean
-      speed?: number
-      intensity?: number
-    }
-    /** Floating/hovering animation */
-    floating?: {
-      enabled?: boolean
-      speed?: number
-      amplitude?: number
-    }
-    /** Auto rotation */
-    rotation?: {
-      enabled?: boolean
-      speedX?: number
-      speedY?: number
-      speedZ?: number
-    }
-    /** Wave animation through stars */
-    wave?: {
-      enabled?: boolean
-      speed?: number
-      amplitude?: number
-    }
-    /** Turbulence/noise */
-    turbulence?: {
-      enabled?: boolean
-      intensity?: number
-      speed?: number
-    }
-  }
-  /** Audio effects */
-  audioEffects?: {
-    /** Enable audio reactivity */
-    enabled?: boolean
-    /** Overall reactivity multiplier (0-3) */
-    reactivity?: number
-    /** Bass frequency influence on size */
-    bassInfluence?: number
-    /** Mid frequency influence on brightness */
-    midInfluence?: number
-    /** High frequency influence on movement */
-    highInfluence?: number
-    /** Smoothing factor */
-    smoothing?: number
-    /** Scale pulse with bass */
-    scalePulse?: boolean
-    /** Movement intensity from audio */
-    movementIntensity?: number
-  }
-  /** Base scale */
-  scale?: number
-  /** Transition duration for smooth changes (ms) */
-  transitionDuration?: number
-}
-
-// -----------------------------------------------------------------------------
-// Crystal Ball Config
-// -----------------------------------------------------------------------------
-
-export type CrystalBallStyle = 'mystical' | 'nebula' | 'earth' | 'fire' | 'ocean'
-
-export interface CrystalBallStyleSelection {
-  style: CrystalBallStyle
-}
-
-export interface CrystalBallConfig {
-  style?: CrystalBallStyleSelection
-  volume?: {
-    /** Number of raymarching iterations (8-64) */
-    iterations?: number
-    /** Maximum depth into the sphere (0-1) */
-    depth?: number
-    /** Smoothing factor between layers */
-    smoothing?: number
-    /** Noise scale for the heightmap */
-    noiseScale?: number
-    /** Noise octaves for detail */
-    noiseOctaves?: number
-  }
-  animation?: {
-    /** Displacement animation speed */
-    displacementSpeed?: number
-    /** Displacement strength */
-    displacementStrength?: number
-    /** Base rotation speed */
-    rotationSpeed?: { x: number; y: number; z: number }
-    /** Pulse speed for breathing effect */
-    pulseSpeed?: number
-    /** Pulse intensity */
-    pulseIntensity?: number
-  }
-  colors?: {
-    primary: string
-    secondary: string
-  }
-  audioEffects?: {
-    /** How much bass affects displacement */
-    bassDisplacement?: number
-    /** How much mids affect color intensity */
-    midColorBoost?: number
-    /** How much highs affect glow */
-    highGlowBoost?: number
-    /** Overall reactivity multiplier */
-    reactivity?: number
-    /** Smoothing factor for transitions */
-    smoothing?: number
-    /** Enable/disable audio reactivity */
-    enabled?: boolean
-  }
-  /** Overall scale */
-  scale?: number
-  /** Roughness of the glass surface (0 = mirror, 1 = matte) */
-  roughness?: number
-  /** Metalness (0 = dielectric, 1 = metallic) */
-  metalness?: number
-  /** Environment map intensity */
-  envMapIntensity?: number
 }
 
 // -----------------------------------------------------------------------------
@@ -697,6 +546,8 @@ export interface AgentPipeline {
   interrupt(): void
   onUserSpeech(callback: (transcript: string) => void): void
   onAgentText(callback: (text: string) => void): void
+  /** Optional: interim STT (e.g. LiveKit pipeline) */
+  onInterimTranscript?(callback: (text: string) => void): void
   onAgentSpeech(callback: (audio: ArrayBuffer) => void): void
   dispose(): void
   setToolExecutor(executor: ToolExecutor): void
@@ -751,7 +602,15 @@ export interface SoulConfig {
   language?: string
   conversationStyle?: string
   responseLength?: 'short' | 'medium' | 'long'
-  emotionalTone?: 'neutral' | 'warm' | 'enthusiastic' | 'calm'
+  emotionalTone?:
+    | 'neutral'
+    | 'warm'
+    | 'enthusiastic'
+    | 'calm'
+    | 'playful'
+    | 'confident'
+    | 'serious'
+    | 'compassionate'
   emotionalTraits?: EmotionalTraits
 }
 

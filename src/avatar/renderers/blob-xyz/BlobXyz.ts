@@ -15,7 +15,7 @@ import {
 } from 'three'
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js'
 import { createBlobXyzGeometry } from './geometry'
-import { animateBlobXyz } from './animation'
+import { animateBlobXyz, type LiquidPhysics } from './animation'
 import { createSkin } from './skins'
 import { defaultBlobXyzConfig } from './config'
 import { BlobXyzPosition } from './position'
@@ -25,7 +25,7 @@ import {
   getRandomHexColor,
   genDNA,
 } from '../../../utils/randoms'
-import type { BlobXyzOptions, BlobXyzSkinSelection, TricolorSubtype, BlobXyzAudioEffects } from './types'
+import type { BlobXyzOptions, BlobXyzSkin, BlobXyzAudioEffects, TricolorSkinConfig } from './types'
 import { logger } from '../../../utils/logger'
 
 
@@ -36,9 +36,8 @@ import { logger } from '../../../utils/logger'
 export class BlobXyz {
   private mesh: Mesh
   private config = defaultBlobXyzConfig
-  public currentSkin: BlobXyzSkinSelection
-  public currentSkinSubtype: TricolorSubtype
-  private skins: Map<TricolorSubtype, ShaderMaterial> = new Map()
+  public currentSkin: BlobXyzSkin
+  private skins: Map<BlobXyzSkin, ShaderMaterial> = new Map()
 
   private animationFrameId: number | null = null
 
@@ -54,6 +53,11 @@ export class BlobXyz {
     duration: number
   }> = []
   private clickEnabled = false
+  private cursorFollowEnabled = false
+  private cursorFollowSensitivity = 1
+  private pointerTarget = { x: 0, y: 0 }
+  private hasPointerInput = false
+  private pointerCleanup: (() => void) | null = null
 
   // Touch configuration
   public touchStrength = 1.0
@@ -95,21 +99,26 @@ export class BlobXyz {
   public time = { x: 1, y: 1, z: 1 }
   public rotation = { x: 0, y: 0, z: 0 }
 
+  // Liquid physics velocity tracking
+  private prevMeshX = 0
+  private prevMeshY = 0
+  private smoothVelocityX = 0
+  private smoothVelocityY = 0
+  private liquidPhysics: LiquidPhysics = { velocityX: 0, velocityY: 0, stretch: 0.6 }
+
   // Audio effect parameters
   public audioEffects: BlobXyzAudioEffects = {
-    bassSpike: 0.65,
-    midSpike: 0.5,
-    highSpike: 0.38,
-    midTime: 0.1,
-    highTime: 0.18,
-    ultraTime: 0.08,
+    bassSpike: 0.55,
+    midSpike: 0.58,
+    highSpike: 0.35,
     enabled: true,
-    timeEnabled: false,
-    reactivity: 1.9,
+    reactivity: 1.45,
     sensitivity: 0.075,
     breathing: 0.035,
-    responseSpeed: 0.75,
-    transientBoost: 0.5,
+    responseSpeed: 0.65,
+    transientBoost: 0.24,
+    spikeDensity: 1.18,
+    rotateWhilePlaying: true,
   }
   public colors = { x: '#ff0000', y: '#00ff00', z: '#0000ff' }
   public opacity = 1
@@ -122,15 +131,12 @@ export class BlobXyz {
   public position: BlobXyzPosition
 
   constructor(private options: BlobXyzOptions) {
-    const selection: BlobXyzSkinSelection = options.skin ?? { skin: 'tricolor', subtype: 'poles' }
-    const subtype: TricolorSubtype = selection.subtype ?? 'poles'
-
-    this.currentSkin = { skin: 'tricolor', subtype }
-    this.currentSkinSubtype = subtype
+    const skin: BlobXyzSkin = options.skin ?? 'radial'
+    this.currentSkin = skin
 
     this.initializeSkins(options.colors)
 
-    const activeSkinConfig = this.config.skins.tricolor[subtype]
+    const activeSkinConfig = this.getSkinConfig(skin)
 
     if (options.colors) {
       this.colors = {
@@ -153,7 +159,10 @@ export class BlobXyz {
       options.resolution || this.config.resolution.default,
     )
 
-    const material = this.skins.get(this.currentSkinSubtype)!
+    const material = this.skins.get(this.currentSkin) ?? this.skins.get('radial')
+    if (!material) {
+      throw new Error('No blob skin materials available')
+    }
     this.mesh = new Mesh(geometry, material)
     this.updateMaterialOpacity(this.opacity)
     this.updateLightIntensityUniforms()
@@ -182,16 +191,30 @@ export class BlobXyz {
       this.setWireframe(options.wireframe)
     }
 
+    if (options.cursorFollow) {
+      this.setCursorFollowSensitivity(options.cursorFollow.sensitivity ?? 1)
+      this.setCursorFollowEnabled(options.cursorFollow.enabled ?? false)
+    }
+
     this.startAnimation()
   }
 
   /**
    * Initialize all available skins
    */
+  private getSkinConfig(skin: BlobXyzSkin): TricolorSkinConfig {
+    const cfg = this.config.skins.presets[skin]
+    if (cfg) return cfg
+    return this.config.skins.presets.radial
+  }
+
   private initializeSkins(colorOverride?: { x: string; y: string; z: string }): void {
-    const polesConfig = this.config.skins.tricolor.poles
-    const donutConfig = this.config.skins.tricolor.donut
-    const vintageConfig = this.config.skins.tricolor.vintage
+    const skins: BlobXyzSkin[] = [
+      'radial', 'banded', 'striped', 'marble', 'fresnel', 'iridescent', 'spiral', 'plasma', 'gradient',
+      'matte', 'glossy', 'metallic', 'subsurface',
+      'chrome', 'clay', 'jade', 'toon-matcap', 'hologram',
+      'flat', 'stepped', 'halftone', 'outlined',
+    ]
 
     const getConfigWithColors = <T extends { color1: string; color2: string; color3: string }>(baseConfig: T) => {
       if (colorOverride) {
@@ -205,17 +228,12 @@ export class BlobXyz {
       return baseConfig
     }
 
-    const polesMaterial = createSkin({ skin: 'tricolor', subtype: 'poles' }, getConfigWithColors(polesConfig))
-    this.applyBackgroundTextureToMaterial(polesMaterial)
-    this.skins.set('poles', polesMaterial)
-
-    const donutMaterial = createSkin({ skin: 'tricolor', subtype: 'donut' }, getConfigWithColors(donutConfig))
-    this.applyBackgroundTextureToMaterial(donutMaterial)
-    this.skins.set('donut', donutMaterial)
-
-    const vintageMaterial = createSkin({ skin: 'tricolor', subtype: 'vintage' }, getConfigWithColors(vintageConfig))
-    this.applyBackgroundTextureToMaterial(vintageMaterial)
-    this.skins.set('vintage', vintageMaterial)
+    for (const skin of skins) {
+      const baseConfig = this.getSkinConfig(skin)
+      const material = createSkin(skin, getConfigWithColors(baseConfig))
+      this.applyBackgroundTextureToMaterial(material)
+      this.skins.set(skin, material)
+    }
   }
 
   private applyBackgroundTextureToMaterial(material: ShaderMaterial): void {
@@ -308,6 +326,18 @@ export class BlobXyz {
         this.thinkingTransition = Math.max(0, this.thinkingTransition - this.transitionSpeed)
       }
 
+      const currentX = this.mesh.position.x
+      const currentY = this.mesh.position.y
+      const rawVX = currentX - this.prevMeshX
+      const rawVY = currentY - this.prevMeshY
+      const smoothing = 0.15
+      this.smoothVelocityX += (rawVX - this.smoothVelocityX) * smoothing
+      this.smoothVelocityY += (rawVY - this.smoothVelocityY) * smoothing
+      this.liquidPhysics.velocityX = this.smoothVelocityX
+      this.liquidPhysics.velocityY = this.smoothVelocityY
+      this.prevMeshX = currentX
+      this.prevMeshY = currentY
+
       const analyser = this.options.audio.getAnalyser()
       if (analyser) {
         const frequencyData = this.options.audio.getFrequencyData() as Uint8Array<ArrayBuffer>
@@ -335,17 +365,33 @@ export class BlobXyz {
           this.thinkingTransition,
           thinkingProgress,
           this.audioEffects,
+          this.liquidPhysics,
         )
 
-        if (!audioDriven) {
-          this.mesh.rotation.x += this.rotation.x
-          this.mesh.rotation.y += this.rotation.y
-          this.mesh.rotation.z += this.rotation.z
-        }
+        const keepRotating = this.audioEffects.rotateWhilePlaying ?? true
+        const rotationScale = audioDriven && !keepRotating ? 0 : audioDriven ? 0.4 : 1
+        this.mesh.rotation.x += this.rotation.x * rotationScale
+        this.mesh.rotation.y += this.rotation.y * rotationScale
+        this.mesh.rotation.z += this.rotation.z * rotationScale
       } else {
         this.mesh.rotation.x += this.rotation.x
         this.mesh.rotation.y += this.rotation.y
         this.mesh.rotation.z += this.rotation.z
+      }
+
+      if (this.cursorFollowEnabled) {
+        const driftY = Math.sin(performance.now() * 0.00025) * 0.08
+        const driftX = Math.cos(performance.now() * 0.0002) * 0.04
+        const s = this.cursorFollowSensitivity
+        const desiredY = this.hasPointerInput
+          ? (Math.PI / 2) + (this.pointerTarget.y * 1.1 * s)
+          : (Math.PI / 2) + driftY
+        const desiredX = this.hasPointerInput
+          ? this.pointerTarget.x * 0.55 * s
+          : driftX
+
+        this.mesh.rotation.y += (desiredY - this.mesh.rotation.y) * 0.08
+        this.mesh.rotation.x += (desiredX - this.mesh.rotation.x) * 0.08
       }
 
       // Clean up expired touch points
@@ -354,7 +400,11 @@ export class BlobXyz {
         tp => (currentTime - tp.startTime) < tp.duration
       )
 
-      // Render
+      const activeMaterial = this.mesh.material as ShaderMaterial
+      if (activeMaterial.uniforms?.uTime) {
+        activeMaterial.uniforms.uTime.value = performance.now() * 0.001
+      }
+
       this.options.renderer.render(this.options.scene, this.options.camera)
       this.options.onAfterRender?.()
 
@@ -384,17 +434,15 @@ export class BlobXyz {
   /**
    * Change the blob's skin
    */
-  setSkin(selection: BlobXyzSkinSelection): void {
-    const subtype: TricolorSubtype = selection.subtype ?? 'poles'
-    const material = this.skins.get(subtype)
+  setSkin(skin: BlobXyzSkin): void {
+    const material = this.skins.get(skin)
 
     if (material) {
       const currentMaterial = this.mesh.material as ShaderMaterial
       const currentShininess = currentMaterial.uniforms?.shininess?.value || 50
       const currentWireframe = currentMaterial.wireframe
 
-      this.currentSkin = { skin: 'tricolor', subtype }
-      this.currentSkinSubtype = subtype
+      this.currentSkin = skin
       this.mesh.material = material
       this.applyBackgroundTextureToMaterial(material)
 
@@ -420,12 +468,12 @@ export class BlobXyz {
   /**
    * Get current skin type
    */
-  getCurrentSkin(): BlobXyzSkinSelection {
+  getCurrentSkin(): BlobXyzSkin {
     return this.currentSkin
   }
 
-  getCurrentSkinSubtype(): TricolorSubtype {
-    return this.currentSkinSubtype
+  getCurrentSkinType(): BlobXyzSkin {
+    return this.currentSkin
   }
 
   /**
@@ -482,6 +530,28 @@ export class BlobXyz {
    */
   setRotation(x: number, y: number, z: number): void {
     this.rotation = { x, y, z }
+  }
+
+  setCursorFollowEnabled(enabled: boolean): void {
+    this.cursorFollowEnabled = enabled
+    if (enabled) {
+      this.bindPointerTracking()
+    } else {
+      this.unbindPointerTracking()
+      this.hasPointerInput = false
+    }
+  }
+
+  getCursorFollowEnabled(): boolean {
+    return this.cursorFollowEnabled
+  }
+
+  setCursorFollowSensitivity(value: number): void {
+    this.cursorFollowSensitivity = Math.max(0.1, Math.min(2.5, value))
+  }
+
+  getCursorFollowSensitivity(): number {
+    return this.cursorFollowSensitivity
   }
 
   /**
@@ -823,6 +893,35 @@ export class BlobXyz {
     if (this.mesh) {
       applyIntensity(this.mesh.material as ShaderMaterial)
     }
+  }
+
+  private bindPointerTracking(): void {
+    if (this.pointerCleanup || typeof window === 'undefined') return
+
+    const onPointerMove = (event: PointerEvent) => {
+      const nx = (event.clientX / window.innerWidth) * 2 - 1
+      const ny = (event.clientY / window.innerHeight) * 2 - 1
+      this.pointerTarget.x = Math.max(-1, Math.min(1, ny))
+      this.pointerTarget.y = Math.max(-1, Math.min(1, nx))
+      this.hasPointerInput = true
+    }
+
+    const onPointerLeave = () => {
+      this.hasPointerInput = false
+    }
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
+    window.addEventListener('pointerleave', onPointerLeave, { passive: true })
+
+    this.pointerCleanup = () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerleave', onPointerLeave)
+      this.pointerCleanup = null
+    }
+  }
+
+  private unbindPointerTracking(): void {
+    this.pointerCleanup?.()
   }
 
   /**
@@ -1182,6 +1281,7 @@ export class BlobXyz {
    * Cleanup and dispose resources
    */
   dispose(): void {
+    this.unbindPointerTracking()
     this.disableClickInteraction()
     this.stopThinking()
     this.stopAnimation()

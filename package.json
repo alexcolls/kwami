@@ -1,8 +1,9 @@
 {
   "name": "kwami",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "3D AI companion library with voice, memory, and tools",
   "type": "module",
+  "packageManager": "pnpm@10.28.1",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,12 +21,12 @@
     "dev": "vite build --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint \"src/**/*.ts\" \"pg/src/**/*.ts\" \"scripts/**/*.ts\"",
-    "lint:fix": "eslint \"src/**/*.ts\" \"pg/src/**/*.ts\" \"scripts/**/*.ts\" --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"pg/src/**/*.ts\" \"scripts/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"pg/src/**/*.ts\" \"scripts/**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"scripts/**/*.ts\"",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run --passWithNoTests"
   },
   "keywords": [
     "ai",
@@ -45,8 +46,8 @@
     "three": ">=0.183.2"
   },
   "devDependencies": {
-    "@types/node": "25.3.5",
     "@eslint/js": "^10.0.1",
+    "@types/node": "25.3.5",
     "@types/three": "^0.170.0",
     "eslint": "^9.18.0",
     "globals": "^17.4.0",

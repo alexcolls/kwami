@@ -5,20 +5,11 @@ import type { KwamiAudio } from '../../audio/KwamiAudio'
 // BLOB TYPES
 // =============================================================================
 
-/**
- * Blob skin system
- * The only skin is Tricolor, with 3 subtypes.
- */
-export type BlobXyzSkin = 'tricolor'
-export type TricolorSubtype = 'poles' | 'donut' | 'vintage'
-
-/**
- * Skin selection (extensible discriminated union).
- */
-export type BlobXyzSkinSelection = {
-  skin: 'tricolor'
-  subtype?: TricolorSubtype
-}
+export type BlobXyzSkin =
+  | 'radial' | 'banded' | 'striped' | 'marble' | 'fresnel' | 'iridescent' | 'spiral' | 'plasma' | 'gradient'
+  | 'matte' | 'glossy' | 'metallic' | 'subsurface'
+  | 'chrome' | 'clay' | 'jade' | 'toon-matcap' | 'hologram'
+  | 'flat' | 'stepped' | 'halftone' | 'outlined'
 
 /**
  * Tricolor skin configuration
@@ -37,7 +28,7 @@ export interface TricolorSkinConfig {
  * Blob configuration options
  */
 export interface BlobXyzConfig {
-  skin?: BlobXyzSkinSelection
+  skin?: BlobXyzSkin
   resolution?: number
   spikes?: { x: number; y: number; z: number }
   time?: { x: number; y: number; z: number }
@@ -46,6 +37,10 @@ export interface BlobXyzConfig {
   shininess?: number
   wireframe?: boolean
   position?: { x: number; y: number } // Normalized position (0-1)
+  cursorFollow?: {
+    enabled?: boolean
+    sensitivity?: number
+  }
 }
 
 /**
@@ -57,7 +52,7 @@ export interface BlobXyzOptions {
   renderer: WebGLRenderer
   audio: KwamiAudio
 
-  skin?: BlobXyzSkinSelection
+  skin?: BlobXyzSkin
   resolution?: number
   spikes?: { x: number; y: number; z: number }
   time?: { x: number; y: number; z: number }
@@ -65,6 +60,10 @@ export interface BlobXyzOptions {
   colors?: { x: string; y: string; z: string }
   shininess?: number
   wireframe?: boolean
+  cursorFollow?: {
+    enabled?: boolean
+    sensitivity?: number
+  }
   onAfterRender?: () => void
 }
 
@@ -98,11 +97,7 @@ export interface BlobXyzOptionsConfig {
     step: number
   }
   skins: {
-    tricolor: {
-      poles: TricolorSkinConfig
-      donut: TricolorSkinConfig
-      vintage: TricolorSkinConfig
-    }
+    presets: Record<BlobXyzSkin, TricolorSkinConfig>
   }
 }
 
@@ -113,14 +108,12 @@ export interface BlobXyzAudioEffects {
   bassSpike: number
   midSpike: number
   highSpike: number
-  midTime: number
-  highTime: number
-  ultraTime: number
   enabled: boolean
-  timeEnabled: boolean
   reactivity?: number
   sensitivity?: number
   breathing?: number
   responseSpeed?: number
   transientBoost?: number
+  spikeDensity?: number
+  rotateWhilePlaying?: boolean
 }

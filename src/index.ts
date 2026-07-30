@@ -6,7 +6,7 @@
 export { Kwami } from './Kwami'
 
 // Modules
-export { Avatar, Scene, StarField, type StarFieldConfig, BlobXyz, BlobXyzPosition, OrbitalShards, CrystalBall, KwamiAudio, createSkin, defaultBlobXyzConfig, defaultOrbitalShardsConfig, defaultCrystalBallConfig } from './avatar'
+export { Avatar, Scene, StarField, type StarFieldConfig, BlobXyz, BlobXyzPosition, KwamiAudio, createSkin, defaultBlobXyzConfig } from './avatar'
 export { Agent } from './agent'
 export { Soul } from './soul'
 export { Memory } from './memory'
@@ -75,6 +75,21 @@ export {
   filterPresetVoices,
 } from './agent'
 
+export {
+  VOICE_STT_PROVIDERS,
+  VOICE_LLM_PROVIDERS,
+  VOICE_TTS_PROVIDERS,
+  VOICE_REALTIME_PROVIDERS,
+  VOICE_STT_MODELS,
+  VOICE_LLM_MODELS,
+  VOICE_TTS_MODELS,
+  VOICE_REALTIME_MODELS,
+  VOICE_FALLBACK_STT_LANGUAGES,
+  VOICE_FALLBACK_TTS_VOICES,
+  VOICE_FALLBACK_REALTIME_VOICES,
+  VOICE_UI_PRESETS,
+} from './agent'
+
 // Core Types
 export type {
   // Core
@@ -88,16 +103,7 @@ export type {
   AvatarRenderer,
   AvatarRendererType,
   BlobXyzConfig,
-  BlobXyzSkinSelection,
   BlobXyzSkin,
-  TricolorSubtype,
-  OrbitalShardsConfig,
-  OrbitalShardsFormation,
-  OrbitalShardsCoreStyle,
-  OrbitalShardsFormationSelection,
-  CrystalBallConfig,
-  CrystalBallStyle,
-  CrystalBallStyleSelection,
   SceneConfig,
   SceneBackgroundConfig,
   CameraConfig,
@@ -134,6 +140,15 @@ export type {
   SkillResult,
 } from './types'
 
+export {
+  soulPresets,
+  soulPresetCategories,
+  getSoulPresetById,
+  getSoulPresetsByCategory,
+  toSoulConfig,
+} from './soul'
+export type { SoulPreset } from './soul'
+
 // Re-export blob-specific types
 export type {
   BlobXyzOptions,
@@ -142,26 +157,38 @@ export type {
   BlobXyzAudioEffects,
 } from './avatar/renderers/blob-xyz/types'
 
-// Re-export orbital-shards-specific types
-export type {
-  OrbitalShardsOptions,
-  OrbitalShardsOptionsConfig,
-  ShardConfig,
-  CoreConfig,
-  OrbitalShardsAudioEffects,
-  CoreStyle,
-  FormationConfig,
-} from './avatar/renderers/orbital-shards/types'
+export {
+  avatarBlobPresets,
+  avatarBlackHolePresets,
+  avatarEyeIrisPresets,
+  BLOB_SKINS,
+  BLOB_SKIN_LABELS,
+  randomBlobSkinType,
+  randomBlobColors,
+  randomBlobSurface,
+  randomBlobScale,
+  randomBlobVector3Degrees,
+  randomBlobSpikes,
+  randomBlobAmplitude,
+  randomBlobTime,
+  randomBlobRotation,
+  randomBlobBreathing,
+  randomBlobTouch,
+  randomBlobAudio,
+  randomBlobFrequencyBands,
+  randomizeBlobState,
+} from './avatar'
 
-// Re-export crystal-ball-specific types
 export type {
-  CrystalBallOptions,
-  CrystalBallOptionsConfig,
-  VolumeConfig,
-  CrystalBallAnimationConfig,
-  CrystalBallAudioEffects,
-  StyleConfig as CrystalBallStyleConfig,
-} from './avatar/renderers/crystal-ball/types'
+  AvatarBlobPreset,
+  AvatarBlackHolePreset,
+  AvatarEyeIrisPreset,
+  BlobPresetState,
+  BlackHolePresetState,
+  EyeIrisPresetState,
+  BlobSkinType,
+  BlobRandomizerState,
+} from './avatar'
 
 // Adapter types
 export type { LiveKitAdapterConfig, AgentAdapter, AdapterFactory } from './agent'

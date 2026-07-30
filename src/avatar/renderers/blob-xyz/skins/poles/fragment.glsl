@@ -27,15 +27,10 @@ void main(){
   }
   vec3 specular=specular_color*spec;
   float angle=atan(vPosition.y,vPosition.x);
-  float hue=angle/(2.*3.14159265359)+.5;// Normalize the angle to [0, 1]
-  vec3 _color;
-  if(hue<1./3.){
-    _color=mix(_color1,_color2,3.*hue);
-  }else if(hue<2./3.){
-    _color=mix(_color2,_color3,3.*(hue-1./3.));
-  }else{
-    _color=mix(_color3,_color1,3.*(hue-2./3.));
-  }
+  vec3 weights=.5+.5*vec3(cos(angle),cos(angle-2.09439510239),cos(angle-4.18879020479));
+  float total=weights.x+weights.y+weights.z+0.0001;
+  weights/=total;
+  vec3 _color=_color1*weights.x+_color2*weights.y+_color3*weights.z;
   vec3 finalColor=clamp(_color+specular,0.,1.);
 
   if(lightIntensity>0.){

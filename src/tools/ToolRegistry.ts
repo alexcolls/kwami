@@ -80,7 +80,7 @@ export class ToolRegistry {
     return this.getAll().map(tool => ({
       name: tool.name,
       description: tool.description,
-      parameters: tool.parameters,
+      parameters: normalizeToolParameters(tool.parameters),
     }))
   }
 
@@ -148,6 +148,28 @@ export class ToolRegistry {
     }
     this.mcpClients.clear()
     this.tools.clear()
+  }
+}
+
+function normalizeToolParameters(parameters?: Record<string, unknown>): Record<string, unknown> {
+  if (!parameters || Object.keys(parameters).length === 0) {
+    return {
+      type: 'object',
+      properties: {},
+      required: [],
+      additionalProperties: false,
+    }
+  }
+
+  if (parameters.type === 'object' && 'properties' in parameters) {
+    return parameters
+  }
+
+  return {
+    type: 'object',
+    properties: parameters,
+    required: [],
+    additionalProperties: false,
   }
 }
 

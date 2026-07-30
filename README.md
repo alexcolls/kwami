@@ -4,7 +4,7 @@ A 3D AI companion library with voice interaction, memory, tools, and customizabl
 
 ## Features
 
-- **🎭 3D Avatars**: Multiple renderer types including BlobXyz, Crystal Ball, Orbital Shards, Stars Genesis, and Black Hole
+- **🎭 3D Avatars**: BlobXyz and Black Hole renderers
 - **🎤 Voice Pipeline**: Real-time voice interaction with STT, LLM, and TTS via LiveKit
 - **🧠 Memory**: Long-term memory support with Zep integration for context-aware conversations
 - **🛠️ Tools**: MCP (Model Context Protocol) integration for external capabilities
@@ -77,9 +77,6 @@ await kwami.disconnect()
 The visual representation of your AI companion. Multiple renderer types are available:
 
 - **BlobXyz**: Animated 3D blob with customizable skins (donut, poles, vintage)
-- **Crystal Ball**: Mystical crystal visualization
-- **Orbital Shards**: Dynamic shard formations orbiting a core
-- **Stars Genesis**: Starfield background with animated elements
 - **Black Hole**: Minimalist black hole visualization
 
 ### Agent
@@ -126,7 +123,7 @@ Native behaviors and capabilities:
 const kwami = new Kwami(canvas, {
   // Avatar configuration
   avatar: {
-    renderer: 'blob-xyz', // or 'crystal-ball', 'orbital-shards', etc.
+    renderer: 'blob-xyz', // or 'black-hole'
     scene: {
       background: 'stars',
       camera: { position: [0, 0, 5] },

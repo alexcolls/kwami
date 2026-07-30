@@ -24,7 +24,7 @@ const kwamiRegistry = new Map<string, Kwami>()
  * Kwami - 3D AI Companion
  * 
  * Each Kwami instance is a unique AI agent with its own:
- * - Avatar: Visual representation (3D blob, crystal, etc.)
+ * - Avatar: Visual representation (3D blob, black hole, etc.)
  * - Agent: Voice pipeline (STT, LLM, TTS) deployed to LiveKit
  * - Soul: Personality, traits, and behavior
  * - Memory: Long-term recall (Zep)
@@ -330,6 +330,9 @@ export class Kwami {
    */
   registerTool(tool: Parameters<ToolRegistry['register']>[0]): void {
     this.tools.register(tool)
+    if (tool.handler) {
+      this.agent.registerTool(tool.name, tool.handler)
+    }
     if (this.isConnected()) {
       this.agent.syncConfigToBackend('tools', this.tools.getToolDefinitions())
     }
@@ -340,6 +343,7 @@ export class Kwami {
    */
   unregisterTool(name: string): void {
     this.tools.unregister(name)
+    this.agent.unregisterTool(name)
     if (this.isConnected()) {
       this.agent.syncConfigToBackend('tools', this.tools.getToolDefinitions())
     }

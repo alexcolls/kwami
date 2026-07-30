@@ -283,6 +283,22 @@ export class StarField {
     this.config.rotationSpeed = speed
   }
 
+  setMinSize(size: number): void {
+    this.config.minSize = size
+    if (this._enabled) {
+      this.removeStarField()
+      this.createStarField()
+    }
+  }
+
+  setMaxSize(size: number): void {
+    this.config.maxSize = size
+    if (this._enabled) {
+      this.removeStarField()
+      this.createStarField()
+    }
+  }
+
   /**
    * Get current configuration
    */

@@ -2,43 +2,61 @@ export { Avatar } from './Avatar'
 export { Scene, StarField, type StarFieldConfig } from './scene'
 export { KwamiAudio } from './audio'
 export { BlobXyz, BlobXyzPosition, defaultBlobXyzConfig, createSkin } from './renderers/blob-xyz'
-export { OrbitalShards, defaultOrbitalShardsConfig } from './renderers/orbital-shards'
-export { CrystalBall, defaultCrystalBallConfig } from './renderers/crystal-ball'
+export { ParticlesFace, defaultParticlesFaceConfig } from './renderers/particles-face'
+export { EyeIris, getDefaultEyeIrisConfig, eyeIrisPalettePresets, getEyeIrisPalette } from './renderers/eye-iris'
+export {
+  avatarBlobPresets,
+  avatarBlackHolePresets,
+  avatarEyeIrisPresets,
+} from './presets'
+export {
+  BLOB_SKINS,
+  BLOB_SKIN_LABELS,
+  randomBlobSkinType,
+  randomBlobColors,
+  randomBlobSurface,
+  randomBlobScale,
+  randomBlobVector3Degrees,
+  randomBlobSpikes,
+  randomBlobAmplitude,
+  randomBlobTime,
+  randomBlobRotation,
+  randomBlobBreathing,
+  randomBlobTouch,
+  randomBlobAudio,
+  randomBlobFrequencyBands,
+  randomizeBlobState,
+} from './randomizer'
+export type {
+  AvatarBlobPreset,
+  AvatarBlackHolePreset,
+  AvatarEyeIrisPreset,
+  BlobPresetState,
+  BlackHolePresetState,
+  EyeIrisPresetState,
+  BlobSkinType,
+} from './presets'
+export type { BlobRandomizerState } from './randomizer'
 export * from './renderers/types'
 
 // Re-export blob types for convenience
 export type {
   BlobXyzConfig,
   BlobXyzOptions,
-  BlobXyzSkinSelection,
   BlobXyzSkin,
-  TricolorSubtype,
   TricolorSkinConfig,
   BlobXyzAudioEffects,
 } from './renderers/blob-xyz/types'
 
-// Re-export orbital shards types for convenience
+// Re-export particles-face types for convenience
 export type {
-  OrbitalShardsFormation,
-  CoreStyle,
-  OrbitalShardsFormationSelection,
-  ShardConfig,
-  CoreConfig,
-  OrbitalShardsAudioEffects,
-  OrbitalShardsConfig,
-  OrbitalShardsOptions,
-  FormationConfig,
-} from './renderers/orbital-shards/types'
-
-// Re-export crystal ball types for convenience
+  ParticlesFaceConfig,
+  ParticlesFaceOptions,
+  ParticlesFaceAudioEffects,
+} from './renderers/particles-face/types'
 export type {
-  CrystalBallStyle,
-  CrystalBallStyleSelection,
-  VolumeConfig,
-  CrystalBallAnimationConfig,
-  CrystalBallAudioEffects,
-  CrystalBallConfig as CrystalBallRendererConfig,
-  CrystalBallOptions,
-  CrystalBallOptionsConfig,
-  StyleConfig as CrystalBallStyleConfig,
-} from './renderers/crystal-ball/types'
+  EyeIrisConfig,
+  EyeIrisOptions,
+  EyeIrisPalettePreset,
+  EyeIrisAudioEffects,
+} from './renderers/eye-iris/types'

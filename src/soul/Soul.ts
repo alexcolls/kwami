@@ -1,5 +1,6 @@
 import type { SoulConfig, EmotionalTraits, MemoryContext } from '../types'
 import { logger } from '../utils/logger'
+import { getSoulPresetById, toSoulConfig } from './presets'
 
 /**
  * Soul - Manages the AI's personality and identity
@@ -59,6 +60,7 @@ export class Soul {
       conversationStyle,
       responseLength,
       emotionalTone,
+      emotionalTraits,
     } = this.config
 
     let prompt = systemPrompt ?? ''
@@ -90,8 +92,65 @@ export class Soul {
         warm: 'Express warmth and friendliness in your interactions.',
         enthusiastic: 'Show enthusiasm and energy in your responses.',
         calm: 'Maintain a calm, soothing demeanor.',
+        playful: 'Use a light, playful tone while still being helpful and clear.',
+        confident: 'Speak with confident, decisive phrasing without sounding arrogant.',
+        serious: 'Use a serious, focused tone and avoid casual language.',
+        compassionate: 'Respond with compassionate, emotionally supportive language.',
+      } as const
+      if (emotionalTone in toneGuide) {
+        prompt += `\n\n${toneGuide[emotionalTone as keyof typeof toneGuide]}`
       }
-      prompt += `\n\n${toneGuide[emotionalTone]}`
+    }
+
+    if (emotionalTraits) {
+      const traitLabels: Record<string, [string, string]> = {
+        happiness: ['sadder', 'happier'],
+        energy: ['more low-energy', 'more energetic'],
+        confidence: ['more tentative', 'more confident'],
+        calmness: ['more tense', 'calmer'],
+        optimism: ['more cautious', 'more optimistic'],
+        socialness: ['more reserved', 'more social'],
+        empathy: ['more detached', 'more empathic'],
+        curiosity: ['less exploratory', 'more curious'],
+        creativity: ['more literal', 'more creative'],
+        patience: ['more brisk', 'more patient'],
+      }
+      const traitWeights: Record<string, number> = {
+        happiness: 1.1,
+        energy: 1.0,
+        confidence: 1.2,
+        calmness: 1.25,
+        optimism: 1.05,
+        socialness: 0.9,
+        empathy: 1.35,
+        curiosity: 0.95,
+        creativity: 0.9,
+        patience: 1.15,
+      }
+      const weightedTraits: Array<{ magnitude: number; directive: string }> = []
+      Object.entries(emotionalTraits).forEach(([key, value]) => {
+        if (!(key in traitLabels)) return
+        if (typeof value !== 'number') return
+        const weightedScore = value * (traitWeights[key] ?? 1)
+        const magnitude = Math.min(100, Math.abs(weightedScore))
+        if (magnitude < 10) return
+        const [lowLabel, highLabel] = traitLabels[key]
+        const direction = weightedScore > 0 ? highLabel : lowLabel
+        let strength = 'slightly'
+        if (magnitude >= 85) {
+          strength = 'very strongly'
+        } else if (magnitude >= 60) {
+          strength = 'strongly'
+        } else if (magnitude >= 35) {
+          strength = 'moderately'
+        }
+        weightedTraits.push({ magnitude, directive: `${strength} ${direction}` })
+      })
+      if (weightedTraits.length > 0) {
+        weightedTraits.sort((a, b) => b.magnitude - a.magnitude)
+        const directives = weightedTraits.slice(0, 5).map((item) => item.directive)
+        prompt += `\n\nVoice emotion profile: ${directives.join(', ')}. Keep this consistent without sounding exaggerated.`
+      }
     }
 
     // Include memory context if provided
@@ -180,14 +239,33 @@ export class Soul {
   /**
    * Get emotional tone
    */
-  getEmotionalTone(): 'neutral' | 'warm' | 'enthusiastic' | 'calm' | undefined {
+  getEmotionalTone():
+    | 'neutral'
+    | 'warm'
+    | 'enthusiastic'
+    | 'calm'
+    | 'playful'
+    | 'confident'
+    | 'serious'
+    | 'compassionate'
+    | undefined {
     return this.config.emotionalTone
   }
 
   /**
    * Set emotional tone
    */
-  setEmotionalTone(tone: 'neutral' | 'warm' | 'enthusiastic' | 'calm'): void {
+  setEmotionalTone(
+    tone:
+      | 'neutral'
+      | 'warm'
+      | 'enthusiastic'
+      | 'calm'
+      | 'playful'
+      | 'confident'
+      | 'serious'
+      | 'compassionate'
+  ): void {
     this.config.emotionalTone = tone
   }
 
@@ -240,8 +318,18 @@ export class Soul {
    * Load soul from a template name
    */
   loadTemplate(templateName: string): void {
-    // TODO: Implement template loading
-    logger.info(`Loading template: ${templateName}`)
+    const normalized = templateName.trim().toLowerCase()
+    const preset =
+      getSoulPresetById(normalized) ??
+      getSoulPresetById(normalized.replace(/\s+/g, '-'))
+
+    if (!preset) {
+      logger.warn(`Unknown soul template: ${templateName}`)
+      return
+    }
+
+    this.updateConfig(toSoulConfig(preset))
+    logger.info(`Loaded soul template: ${preset.id}`)
   }
 
   /**
