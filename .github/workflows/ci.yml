@@ -15,8 +15,7 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
+        # version comes from package.json "packageManager"
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
