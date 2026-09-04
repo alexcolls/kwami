@@ -72,7 +72,14 @@ function inlineImagePlugin(): Plugin {
   }
 }
 
+const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
+  version: string
+}
+
 export default defineConfig({
+  define: {
+    __KWAMI_VERSION__: JSON.stringify(pkg.version),
+  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -81,7 +88,16 @@ export default defineConfig({
     },
     outDir: 'dist',
     rollupOptions: {
-      external: ['three', 'livekit-client', 'simplex-noise'],
+      // Peer deps and their subpaths must stay bare imports. Listing only the package root
+      // lets Rollup rewrite `three/examples/...` to a pnpm store path under dist/node_modules/,
+      // which breaks consumers and CI artifact reuse (upload-artifact drops hidden `.pnpm` dirs).
+      external: (id) =>
+        id === 'three' ||
+        id.startsWith('three/') ||
+        id === 'livekit-client' ||
+        id.startsWith('livekit-client/') ||
+        id === 'simplex-noise' ||
+        id.startsWith('simplex-noise/'),
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src',

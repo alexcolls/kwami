@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kwami e2e fixture</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #05060a;
+      }
+      #stage {
+        display: block;
+        width: 640px;
+        height: 480px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Fixed pixel size: the specs read the drawing buffer back, so the canvas must not
+         depend on the viewport the browser happens to open at. -->
+    <canvas id="stage" width="640" height="480"></canvas>
+    <script type="module" src="/.generated/app.js"></script>
+  </body>
+</html>

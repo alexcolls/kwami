@@ -1,0 +1,16 @@
+# Every PR into dev/stg/main requests a review from the owner listed here.
+# Later rules win, so the specific entries below override the catch-all.
+
+* @alexcolls
+
+# CI, releases and root tooling change how the package ships.
+/.github/ @alexcolls
+/scripts/ @alexcolls
+/package.json @alexcolls
+/pnpm-lock.yaml @alexcolls
+/.releaserc.cjs @alexcolls
+/commitlint.config.mjs @alexcolls
+
+# The public surface of the library — a change here is a change to the published API.
+/src/index.ts @alexcolls
+/src/types/ @alexcolls

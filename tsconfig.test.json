@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": [
+    "tests/**/*.ts",
+    // The ambient `*.glsl?raw` and image declarations. Tests import through `src/`, and this
+    // tsconfig replaces the base `include` rather than extending it, so without this line every
+    // shader import in a renderer resolves to TS2307 here but not in the src typecheck.
+    "src/types/modules.d.ts",
+    "vitest.config.ts",
+    "vitest.integration.config.ts",
+    "playwright.config.ts",
+    "vite.config.ts",
+    "eslint.config.ts",
+    "scripts/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
+}

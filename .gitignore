@@ -37,6 +37,13 @@ Thumbs.db
 coverage/
 .nyc_output/
 
+# Playwright — reports, traces and the generated e2e fixture bundle
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+tests/e2e/fixtures/.generated/
+
 # Misc
 *.local
 .cache/
