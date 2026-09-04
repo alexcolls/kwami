@@ -1,0 +1,24 @@
+# Block direct pushes to the promote branches. Promotion is by pull request only:
+#
+#   feature/* → dev → stg → main
+#
+# CI (semantic-release pushing the release commit and the back-merges) skips this.
+if [ -n "${CI:-}" ]; then
+  exit 0
+fi
+
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main | refs/heads/stg | refs/heads/dev)
+      branch="${remote_ref#refs/heads/}"
+      echo "error: direct pushes to '${branch}' are blocked."
+      echo "Open a pull request instead — the promote path is feature/* → dev → stg → main."
+      exit 1
+      ;;
+  esac
+done
+
+# Typecheck and the unit suite before anything leaves the machine. The full matrix
+# (integration + e2e) runs in CI; see docs/testing.md.
+pnpm typecheck
+pnpm test:unit

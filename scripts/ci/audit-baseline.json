@@ -1,0 +1,4 @@
+{
+  "$comment": "Critical/high advisories that CI tolerates, checked by scripts/ci/check-audit.mjs. This list only ever shrinks: every entry needs a `reason` saying why it cannot be fixed yet, and removing one is the whole point. Adding an entry to turn a red build green is not an acceptable use.",
+  "accepted": []
+}

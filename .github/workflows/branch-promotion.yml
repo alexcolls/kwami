@@ -1,0 +1,89 @@
+name: branch promotion
+
+# Keeps the promote path one-directional:
+#
+#   feature/* → dev → stg → main
+#
+# The rules live in scripts/ci/assert-promotion-path.mjs and are unit-tested by
+# assert-promotion-path.test.mjs (run by the `unit` job in ci.yml). For `stg` and `main` the
+# head must be THIS repository's current tip of `dev` / `stg` — not a fork, and not a namesake
+# branch. Back-merges into the lower channels are pushed by release.yml, never merged by PR.
+#
+# Make `enforce promotion path` a required status check on `stg` and `main` so the gate cannot
+# be dismissed — see docs/ci-cd.md for the exact ruleset.
+#
+# `pull_request_target` so the check runs from the BASE branch's copy of this workflow even when
+# the head branch predates it, and so a fork PR still gets a token that can comment. Only the
+# base ref is checked out; no untrusted PR code is ever executed.
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+    branches: [dev, stg, main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: promotion-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    name: enforce promotion path
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # The base branch's copy of the rules, not the PR's — a PR must not be able to edit
+          # the gate that judges it.
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Allow only the promote path
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/ci/assert-promotion-path.mjs
+
+      - name: Explain the rejection on the PR
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          REASON_FILE="${RUNNER_TEMP}/promotion-error.txt"
+          REASON="$(cat "$REASON_FILE" 2>/dev/null || echo 'Promotion path check failed.')"
+          MARKER='<!-- kwami-branch-promotion -->'
+          BODY=$(printf '%s\n' \
+            "$MARKER" \
+            '### Branch promotion' \
+            '' \
+            "$REASON" \
+            '' \
+            'Allowed path: `feature/* → dev → stg → main`.' \
+            '' \
+            '- PRs into `stg` must be from this repo'\''s current tip of `dev`.' \
+            '- PRs into `main` must be from this repo'\''s current tip of `stg`.' \
+            '- Back-merges into `stg` and `dev` are pushed by `release.yml`, not opened as PRs.' \
+            '' \
+            'Rules: `scripts/ci/assert-promotion-path.mjs` · Docs: `docs/ci-cd.md`.')
+          # Update the existing comment rather than stacking a new one on every synchronize.
+          existing="$(gh api "repos/${REPO}/issues/${PR}/comments" --paginate \
+            --jq ".[] | select(.user.login==\"github-actions[bot]\" and (.body | contains(\"${MARKER}\"))) | .id" \
+            | head -n1 || true)"
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/${REPO}/issues/comments/${existing}" -f body="$BODY" >/dev/null
+          else
+            gh api "repos/${REPO}/issues/${PR}/comments" -f body="$BODY" >/dev/null
+          fi
