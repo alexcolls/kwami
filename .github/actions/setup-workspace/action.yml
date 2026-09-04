@@ -1,0 +1,24 @@
+name: Setup workspace
+description: pnpm + Node from .nvmrc, with the dependencies installed from a frozen lockfile.
+
+inputs:
+  install:
+    description: Install dependencies with a frozen lockfile.
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v4
+      # The pnpm version comes from package.json "packageManager" — do not pin it twice.
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+
+    - if: inputs.install == 'true'
+      shell: bash
+      # `--frozen-lockfile` is the point: a PR that changes package.json without regenerating
+      # pnpm-lock.yaml fails here rather than silently resolving something else in CI.
+      run: pnpm install --frozen-lockfile

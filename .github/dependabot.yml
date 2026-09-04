@@ -1,96 +1,82 @@
-# To learn more, see: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 version: 2
 
 updates:
-  # -----------------------------------------------------------------------
-  # 1. npm configuration (Handles your Node.js, TypeScript, and GLSL packages)
-  # -----------------------------------------------------------------------
-  - package-ecosystem: "npm"
-    # Look for `package.json` and `package-lock.json` (or yarn/pnpm lock files) in the root
-    directory: "/"
-    
-    # Check for updates every Monday at 9:00 AM UTC
+  # Deploy, release and promotion logic all live in pinned actions — a stale one is a
+  # supply-chain risk, not a convenience.
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-      timezone: "UTC"
-    
-    # Assign PRs to a specific user (replace with actual GitHub handle)
-    assignees:
-      - "your-github-username"
-    
-    # Add labels to the Dependabot PRs for easy filtering
-    labels:
-      - "dependencies"
-      - "npm"
-
-    # Customize the commit message
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: UTC
+    open-pull-requests-limit: 5
+    # `ci:` releases nothing — a workflow bump should not cut a version.
     commit-message:
-      prefix: "chore"
-      include: "scope"
-
-    # Limit the number of open Dependabot PRs at any one time
-    open-pull-requests-limit: 10
-
-    # Strategy for rebasing open PRs if there are conflicts
-    rebase-strategy: "auto"
-
-    # Keep version requirements updated in package.json
-    versioning-strategy: "increase"
-
-    # ---------------------------------------------------------------------
-    # GROUPING: Consolidate PRs to avoid being spammed by Dependabot
-    # ---------------------------------------------------------------------
+      prefix: ci
+    labels:
+      - dependencies
     groups:
-      # Group all TypeScript-related updates into a single PR
+      actions:
+        patterns: ['*']
+
+  - package-ecosystem: npm
+    directory: /
+    # Dependabot opens against the default branch; `dev` is where the promote path starts.
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: UTC
+    open-pull-requests-limit: 10
+    versioning-strategy: increase-if-necessary
+    # `build(deps)` cuts a patch release (see .releaserc.cjs) because a shipped dependency
+    # bump reaches consumers; `chore(deps-dev)` does not, because a devDependency does not.
+    commit-message:
+      prefix: build
+      prefix-development: chore
+      include: scope
+    labels:
+      - dependencies
+    groups:
+      # A three.js major is a breaking change for consumers — it must get its own PR and a
+      # human. Everything else can travel together.
+      three-ecosystem:
+        patterns:
+          - three
+          - '@types/three'
+        update-types:
+          - minor
+          - patch
       typescript-ecosystem:
         patterns:
-          - "typescript"
-          - "@types/*"
-          - "ts-node"
-          - "tslib"
-          
-      # Group GLSL-related tools and loaders into a single PR
-      glsl-tools:
+          - typescript
+          - typescript-eslint
+          - '@typescript-eslint/*'
+          - '@types/*'
+        exclude-patterns:
+          - '@types/three'
+      testing:
         patterns:
-          - "*glsl*"
-          - "three" # (If you are using Three.js alongside GLSL)
-          
-      # Group all other minor and patch updates into a single PR
-      # (Major updates will still get their own PRs to prevent breaking changes)
+          - vitest
+          - '@vitest/*'
+          - '@playwright/test'
+          - happy-dom
+      release-tooling:
+        patterns:
+          - semantic-release
+          - '@semantic-release/*'
+          - '@commitlint/*'
+          - husky
+          - lint-staged
       minor-and-patch:
-        patterns:
-          - "*"
+        patterns: ['*']
         update-types:
-          - "minor"
-          - "patch"
-
-    # ---------------------------------------------------------------------
-    # IGNORE: Exclude specific packages or versions if necessary
-    # ---------------------------------------------------------------------
+          - minor
+          - patch
     ignore:
-      - dependency-name: "some-problematic-package"
-        versions: ["> 2.0.0"] # Ignore updates beyond version 2.0.0
-
-  # -----------------------------------------------------------------------
-  # 2. GitHub Actions configuration (Recommended if you use GitHub Actions)
-  # -----------------------------------------------------------------------
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-      timezone: "UTC"
-    labels:
-      - "dependencies"
-      - "actions"
-    commit-message:
-      prefix: "ci"
-    open-pull-requests-limit: 5
-    groups:
-      # Group all GitHub action updates together
-      actions:
-        patterns:
-          - "*"
+      # `three` is a peerDependency with a deliberately wide range; bumping the devDependency
+      # major without revisiting that range would misrepresent what the library supports.
+      - dependency-name: three
+        update-types: [version-update:semver-major]
