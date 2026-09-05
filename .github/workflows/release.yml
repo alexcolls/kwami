@@ -59,6 +59,7 @@ jobs:
           ref: ${{ github.event.workflow_run.head_branch || github.ref_name }}
           # Full history and tags — semantic-release derives everything from them.
           fetch-depth: 0
+          fetch-tags: true
           # We point origin at a token URL below so the back-merge pushes work too.
           persist-credentials: false
 
@@ -70,6 +71,22 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+      # semantic-release runs `git tag --merged <branch>` for every channel in .releaserc.cjs.
+      # checkout only creates a local ref for the branch being released, so `main` is missing
+      # when releasing from stg/dev (and vice versa) — materialise the rest from origin/*.
+      - name: Materialise release channel branches
+        run: |
+          set -euo pipefail
+          for b in main stg dev; do
+            if git show-ref --verify --quiet "refs/heads/${b}"; then
+              echo "local ${b} already exists"
+            else
+              git branch "${b}" "origin/${b}"
+              echo "created local ${b} from origin/${b}"
+            fi
+          done
+          git branch -vv | grep -E 'main|stg|dev'
 
       # A push that landed while CI was running has its own CI run behind it; let that one
       # release rather than shipping a commit these gates never saw.
