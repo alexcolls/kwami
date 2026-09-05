@@ -104,7 +104,9 @@ export default defineConfig({
         entryFileNames: '[name].js',
       },
     },
-    sourcemap: true,
+    // Maps were 750 KB of a 1.5 MB unpacked payload and embed the whole of `src/` via
+    // `sourcesContent`. Consumers debug their own bundle, not ours; the source is on GitHub.
+    sourcemap: false,
     minify: false,
   },
   plugins: [inlineRawPlugin(), inlineImagePlugin()],

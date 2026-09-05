@@ -5,7 +5,9 @@
     "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "declaration": true,
-    "declarationMap": true,
+    // Off: the maps point at `../src/...`, which the tarball does not ship, so every one of
+    // them resolves to nothing in a consumer's node_modules. 115 KB across 79 dead files.
+    "declarationMap": false,
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
