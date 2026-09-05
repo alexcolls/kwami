@@ -67,7 +67,7 @@ module.exports = {
       {
         changelogFile: 'CHANGELOG.md',
         changelogTitle:
-          '# Changelog\n\nAll notable changes to Kwami are documented here. This file is generated from the\ncommit history by semantic-release — do not edit it by hand.\n\nEntries before 2.2.0 predate the release automation and are not listed; see the git\nhistory for that period.',
+          '# Changelog\n\nAll notable changes to [Kwami](https://github.com/kwami-labs/kwami) are documented in this file.\n\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),\nand this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).\n\nNew releases are prepended by semantic-release from Conventional Commits. Historical\nentries below the automation baseline were reconstructed from git history.',
       },
     ],
     [
