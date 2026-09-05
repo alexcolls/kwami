@@ -1,6 +1,6 @@
 {
   "name": "kwami",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "3D AI companion library with voice, memory, and tools",
   "type": "module",
   "packageManager": "pnpm@10.28.1",
