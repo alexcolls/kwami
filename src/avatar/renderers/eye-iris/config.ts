@@ -7,7 +7,7 @@ import type {
   EyeIrisFollowConfig,
   EyeIrisGeometryConfig,
   EyeIrisPalettePreset,
-} from './types'
+} from './types.js'
 
 export const eyeIrisPalettePresets: Record<EyeIrisPalettePreset, EyeIrisColorConfig> = {
   'light-brown': {

@@ -1,11 +1,11 @@
-import type { KwamiConfig, KwamiState, KwamiCallbacks, MemoryContext, MemorySearchResult } from './types'
-import { Avatar } from './avatar'
-import { Agent } from './agent'
-import { Soul } from './soul'
-import { Memory } from './memory'
-import { ToolRegistry } from './tools'
-import { SkillManager } from './skills'
-import { logger } from './utils/logger'
+import type { KwamiConfig, KwamiState, KwamiCallbacks, MemoryContext, MemorySearchResult } from './types/index.js'
+import { Avatar } from './avatar/index.js'
+import { Agent } from './agent/index.js'
+import { Soul } from './soul/index.js'
+import { Memory } from './memory/index.js'
+import { ToolRegistry } from './tools/index.js'
+import { SkillManager } from './skills/index.js'
+import { logger } from './utils/logger.js'
 
 // Generate unique Kwami ID
 function generateKwamiId(): string {
@@ -87,7 +87,7 @@ export class Kwami {
    * Get the library version
    */
   static getVersion(): string {
-    return '2.0.0'
+    return __KWAMI_VERSION__
   }
 
   /**

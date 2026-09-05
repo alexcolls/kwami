@@ -1,7 +1,7 @@
 import { ShaderMaterial, Color, Vector3 } from 'three'
 import vertexShader from './vertex.glsl?raw'
 import fragmentShader from './fragment.glsl?raw'
-import type { TricolorSkinConfig } from '../../types'
+import type { TricolorSkinConfig } from '../../types.js'
 
 export function createSteppedSkin(config: TricolorSkinConfig): ShaderMaterial {
   const isTransparent = config.opacity < 0.999
@@ -22,4 +22,11 @@ export function createSteppedSkin(config: TricolorSkinConfig): ShaderMaterial {
     },
   })
 }
-export { vertexShader, fragmentShader }
+// Re-exported through `string`-annotated bindings on purpose. Exporting the imported
+// bindings directly makes `tsc` write `import … from './vertex.glsl?raw'` into the emitted
+// declaration, and no consumer's TypeScript can resolve that specifier — it needs an ambient
+// `*.glsl?raw` module declaration this package does not ship. The annotation erases the
+// dependency; the value is a string either way.
+const vertexShaderSource: string = vertexShader
+const fragmentShaderSource: string = fragmentShader
+export { vertexShaderSource as vertexShader, fragmentShaderSource as fragmentShader }

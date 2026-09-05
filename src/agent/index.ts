@@ -3,15 +3,15 @@
 // =============================================================================
 
 // Main Agent class
-export { Agent } from './Agent'
+export { Agent } from './Agent.js'
 
 // Adapters
-export { LiveKitAdapter } from './adapters/LiveKitAdapter'
-export type { AgentAdapter, LiveKitAdapterConfig, AdapterFactory } from './adapters/types'
+export { LiveKitAdapter } from './adapters/LiveKitAdapter.js'
+export type { AgentAdapter, LiveKitAdapterConfig, AdapterFactory } from './adapters/types.js'
 
 // Voice Pipeline
-export { VoiceSession } from './voice/VoiceSession'
-export type { VoiceSessionState, VoiceSessionEvents, VoiceSessionOptions } from './voice/VoiceSession'
+export { VoiceSession } from './voice/VoiceSession.js'
+export type { VoiceSessionState, VoiceSessionEvents, VoiceSessionOptions } from './voice/VoiceSession.js'
 
 // Voice Types (comprehensive)
 export type {
@@ -54,7 +54,7 @@ export type {
   VoicePipelineConfig,
   VoicePipelinePreset,
   VoicePipelineType,
-} from './voice/types'
+} from './voice/types.js'
 
 // Voice Utilities
 export {
@@ -65,7 +65,7 @@ export {
   PRESET_VOICES,
   findPresetVoice,
   filterPresetVoices,
-} from './voice/types'
+} from './voice/types.js'
 
 // Voice UI catalogs
 export {
@@ -81,7 +81,7 @@ export {
   VOICE_FALLBACK_TTS_VOICES,
   VOICE_FALLBACK_REALTIME_VOICES,
   VOICE_UI_PRESETS,
-} from './voice/catalog'
+} from './voice/catalog.js'
 
 export type {
   VoiceProviderOption,
@@ -89,7 +89,7 @@ export type {
   VoiceOption,
   LanguageOption,
   VoicePipelineUiPreset,
-} from './voice/catalog'
+} from './voice/catalog.js'
 
 // Pipeline types
 export type {
@@ -98,4 +98,4 @@ export type {
   MultimodalPipelineConfig,
   PipelineFactory,
   PipelineEvent,
-} from './pipelines/types'
+} from './pipelines/types.js'

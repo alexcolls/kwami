@@ -1,5 +1,5 @@
-import type { ToolsConfig, ToolDefinition, MCPConfig } from '../types'
-import { logger } from '../utils/logger'
+import type { ToolsConfig, ToolDefinition, MCPConfig } from '../types/index.js'
+import { logger } from '../utils/logger.js'
 
 /**
  * ToolRegistry - Manages external tools and MCP integrations

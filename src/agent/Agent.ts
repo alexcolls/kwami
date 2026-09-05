@@ -1,8 +1,8 @@
-import type { AgentConfig, AgentPipeline, PipelineConnectOptions, SoulConfig, ToolDefinition } from '../types'
-import type { AgentAdapter } from './adapters/types'
-import type { VoicePipelineConfig } from './voice/types'
-import { LiveKitAdapter } from './adapters/LiveKitAdapter'
-import { logger } from '../utils/logger'
+import type { AgentConfig, AgentPipeline, PipelineConnectOptions, SoulConfig, ToolDefinition } from '../types/index.js'
+import type { AgentAdapter } from './adapters/types.js'
+import type { VoicePipelineConfig } from './voice/types.js'
+import { LiveKitAdapter } from './adapters/LiveKitAdapter.js'
+import { logger } from '../utils/logger.js'
 
 // Forward declaration to avoid circular dependency
 interface KwamiRef {

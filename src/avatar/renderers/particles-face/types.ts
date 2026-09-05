@@ -1,5 +1,5 @@
 import type * as THREE from 'three'
-import type { KwamiAudio } from '../../audio'
+import type { KwamiAudio } from '../../audio/index.js'
 
 export interface ParticlesFaceConfig {
   particleCount?: number

@@ -9,8 +9,8 @@ import {
   CanvasTexture,
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import type { SceneConfig } from '../../types'
-import { StarField, type StarFieldConfig } from './StarField'
+import type { SceneConfig } from '../../types/index.js'
+import { StarField, type StarFieldConfig } from './StarField.js'
 
 /**
  * Scene - Manages the THREE.js scene configuration for Kwami

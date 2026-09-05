@@ -1,6 +1,6 @@
-import type { AgentPipeline, LiveKitConfig } from '../../types'
-import type { VoicePipelineConfig } from '../voice/types'
-import type { VoiceSessionEvents } from '../voice/VoiceSession'
+import type { AgentPipeline, LiveKitConfig } from '../../types/index.js'
+import type { VoicePipelineConfig } from '../voice/types.js'
+import type { VoiceSessionEvents } from '../voice/VoiceSession.js'
 
 /**
  * Agent Adapter Interface

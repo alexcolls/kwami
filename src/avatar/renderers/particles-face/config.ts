@@ -1,4 +1,4 @@
-import type { ParticlesFaceConfig, ParticlesFaceAudioEffects } from './types'
+import type { ParticlesFaceConfig, ParticlesFaceAudioEffects } from './types.js'
 
 export const defaultParticlesFaceConfig: Required<ParticlesFaceConfig> = {
   particleCount: 12000,

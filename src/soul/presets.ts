@@ -1,4 +1,4 @@
-import type { EmotionalTraits, SoulConfig } from '../types'
+import type { EmotionalTraits, SoulConfig } from '../types/index.js'
 
 export interface SoulPreset {
   id: string

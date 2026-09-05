@@ -15,11 +15,11 @@ import {
   ConnectionState,
   createLocalTracks
 } from 'livekit-client'
-import type { AgentPipeline, PipelineConnectOptions, ToolExecutor } from '../../types'
-import type { AgentAdapter, LiveKitAdapterConfig } from './types'
-import type { VoiceLatencyMetrics, VoicePipelineMetrics } from '../voice/types'
-import { VoiceSession } from '../voice/VoiceSession'
-import { logger } from '../../utils/logger'
+import type { AgentPipeline, PipelineConnectOptions, ToolExecutor } from '../../types/index.js'
+import type { AgentAdapter, LiveKitAdapterConfig } from './types.js'
+import type { VoiceLatencyMetrics, VoicePipelineMetrics } from '../voice/types.js'
+import { VoiceSession } from '../voice/VoiceSession.js'
+import { logger } from '../../utils/logger.js'
 
 /**
  * LiveKit Adapter

@@ -3,7 +3,7 @@
 // =============================================================================
 
 // Import types used in this file
-import type { VoicePipelineConfig as VoicePipelineConfigType } from '../agent/voice/types'
+import type { VoicePipelineConfig as VoicePipelineConfigType } from '../agent/voice/types.js'
 
 // Re-export voice types for convenience
 export type {
@@ -37,7 +37,7 @@ export type {
   VoicePipelineConfig,
   VoicePipelinePreset,
   VoicePipelineType,
-} from '../agent/voice/types'
+} from '../agent/voice/types.js'
 
 // Re-export voice utilities
 export {
@@ -48,7 +48,7 @@ export {
   PRESET_VOICES,
   findPresetVoice,
   filterPresetVoices,
-} from '../agent/voice/types'
+} from '../agent/voice/types.js'
 
 // -----------------------------------------------------------------------------
 // Core
@@ -424,8 +424,8 @@ export interface CameraConfig {
 // Agent
 // -----------------------------------------------------------------------------
 
-import type { VoicePipelineConfig } from '../agent/voice/types'
-import type { VoiceSessionEvents } from '../agent/voice/VoiceSession'
+import type { VoicePipelineConfig } from '../agent/voice/types.js'
+import type { VoiceSessionEvents } from '../agent/voice/VoiceSession.js'
 
 export interface AgentConfig {
   /** Adapter type */

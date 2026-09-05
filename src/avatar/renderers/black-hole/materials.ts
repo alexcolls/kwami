@@ -13,7 +13,7 @@ import type {
   LensingShaderUniforms,
   BlackHoleDiskColors,
   BlackHoleEffectsConfig,
-} from './types'
+} from './types.js'
 
 // =====================================================
 // ACCRETION DISK SHADER

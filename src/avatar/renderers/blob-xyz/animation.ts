@@ -1,6 +1,6 @@
 import { createNoise3D } from 'simplex-noise'
 import { type Mesh, Vector3 } from 'three'
-import type { BlobXyzAudioEffects } from './types'
+import type { BlobXyzAudioEffects } from './types.js'
 
 const noise3D = createNoise3D()
 

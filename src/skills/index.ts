@@ -1,1 +1,1 @@
-export { SkillManager } from './SkillManager'
+export { SkillManager } from './SkillManager.js'

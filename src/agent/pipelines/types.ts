@@ -1,4 +1,4 @@
-import type { AgentPipeline, PipelineConnectOptions, VoiceConfig, ToolDefinition } from '../../types'
+import type { AgentPipeline, PipelineConnectOptions, VoiceConfig, ToolDefinition } from '../../types/index.js'
 
 /**
  * Re-export the base pipeline interface

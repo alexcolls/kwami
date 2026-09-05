@@ -1,16 +1,16 @@
 import * as THREE from 'three'
-import type { KwamiState } from '../../../types'
+import type { KwamiState } from '../../../types/index.js'
 import {
   getDefaultEyeIrisConfig,
   getEyeIrisPalette,
-} from './config'
+} from './config.js'
 import type {
   EyeIrisColorConfig,
   EyeIrisConfig,
   EyeIrisOptions,
   EyeIrisPalettePreset,
   EyeIrisUniforms,
-} from './types'
+} from './types.js'
 
 export class EyeIris {
   private scene: THREE.Scene

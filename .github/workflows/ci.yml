@@ -123,6 +123,12 @@ jobs:
       - name: Build the library
         run: pnpm build
 
+      # `bundler` resolution lets extensionless relative specifiers through, and tsc copies
+      # them into the declarations, where a node16 consumer cannot resolve any of them. The
+      # library's own typecheck never notices, because it never resolves its own output.
+      - name: Assert the declarations resolve under node16
+        run: pnpm check:dts
+
       # A build that emits no entry point or no types is a broken publish, and neither the
       # bundler nor tsc necessarily fails loudly about it.
       - name: Assert the package entry points exist

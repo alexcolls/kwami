@@ -1,5 +1,5 @@
-import { getRandomHexColor } from '../utils/randoms'
-import type { BlobSkinType } from './presets'
+import { getRandomHexColor } from '../utils/randoms.js'
+import type { BlobSkinType } from './presets.js'
 
 export const BLOB_SKINS: readonly BlobSkinType[] = [
   'radial',

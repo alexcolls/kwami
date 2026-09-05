@@ -1,2 +1,2 @@
-export { Scene } from './Scene'
-export { StarField, type StarFieldConfig } from './StarField'
+export { Scene } from './Scene.js'
+export { StarField, type StarFieldConfig } from './StarField.js'

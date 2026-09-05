@@ -1,5 +1,5 @@
 import type { Scene, PerspectiveCamera, WebGLRenderer } from 'three'
-import type { KwamiAudio } from '../../audio/KwamiAudio'
+import type { KwamiAudio } from '../../audio/KwamiAudio.js'
 
 // =============================================================================
 // BLOB TYPES
