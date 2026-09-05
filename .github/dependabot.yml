@@ -5,6 +5,8 @@ updates:
   # supply-chain risk, not a convenience.
   - package-ecosystem: github-actions
     directory: /
+    # Same promote path as npm: land on `dev`, never open straight into `main`.
+    target-branch: dev
     schedule:
       interval: weekly
       day: monday
