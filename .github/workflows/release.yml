@@ -52,7 +52,7 @@ jobs:
       # Empty on a manual run — there is no "the commit ci tested", so the drift guard stands down.
       TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # The branch, not the tested SHA: semantic-release commits and pushes onto it. The
           # guard below refuses to release if the two have drifted apart.

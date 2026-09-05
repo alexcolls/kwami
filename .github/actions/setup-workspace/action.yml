@@ -12,7 +12,7 @@ runs:
     - uses: pnpm/action-setup@v4
       # The pnpm version comes from package.json "packageManager" — do not pin it twice.
 
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-node@v7
       with:
         node-version-file: .nvmrc
         cache: pnpm
