@@ -1,6 +1,6 @@
-import type { SoulConfig, EmotionalTraits, MemoryContext } from '../types'
-import { logger } from '../utils/logger'
-import { getSoulPresetById, toSoulConfig } from './presets'
+import type { SoulConfig, EmotionalTraits, MemoryContext } from '../types/index.js'
+import { logger } from '../utils/logger.js'
+import { getSoulPresetById, toSoulConfig } from './presets.js'
 
 /**
  * Soul - Manages the AI's personality and identity

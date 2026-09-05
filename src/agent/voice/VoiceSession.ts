@@ -9,14 +9,14 @@ import type {
   VADConfig,
   RealtimeConfig,
   VoiceEnhancementsConfig,
-} from './types'
+} from './types.js'
 import {
   getVoicePipelinePreset,
   buildSTTDescriptor,
   buildLLMDescriptor,
   buildTTSDescriptor,
-} from './types'
-import { logger } from '../../utils/logger'
+} from './types.js'
+import { logger } from '../../utils/logger.js'
 
 /**
  * Voice session state

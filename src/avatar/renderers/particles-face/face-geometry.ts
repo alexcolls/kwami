@@ -1,4 +1,4 @@
-import type { FaceRegion } from './types'
+import type { FaceRegion } from './types.js'
 
 /**
  * Generates a realistic 3D human face as a dense particle surface.

@@ -1,7 +1,7 @@
 // Black Hole Renderer - Cosmic Event Horizon Effect
 
-export { BlackHole } from './BlackHole'
-export { getDefaultBlackHoleConfig, colorSchemePresets, getColorsForScheme, getEffectsForScheme } from './config'
+export { BlackHole } from './BlackHole.js'
+export { getDefaultBlackHoleConfig, colorSchemePresets, getColorsForScheme, getEffectsForScheme } from './config.js'
 export {
   createDiskUniforms,
   createDiskMaterial,
@@ -12,7 +12,7 @@ export {
   createLensingUniforms,
   lensingShader,
   updateDiskColors,
-} from './materials'
+} from './materials.js'
 export type {
   BlackHoleColorScheme,
   BlackHoleColorSchemeSelection,
@@ -30,4 +30,4 @@ export type {
   StarShaderUniforms,
   EventHorizonShaderUniforms,
   LensingShaderUniforms,
-} from './types'
+} from './types.js'

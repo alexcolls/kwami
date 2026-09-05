@@ -1,4 +1,4 @@
-import type { MemoryAdapter, MemoryContext, ZepConfig } from '../../types'
+import type { MemoryAdapter, MemoryContext, ZepConfig } from '../../types/index.js'
 
 /**
  * Re-export the base memory adapter interface

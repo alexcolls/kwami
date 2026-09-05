@@ -1,4 +1,4 @@
-export { EyeIris } from './EyeIris'
+export { EyeIris } from './EyeIris.js'
 export {
   getDefaultEyeIrisConfig,
   getDefaultEyeIrisGeometry,
@@ -8,7 +8,7 @@ export {
   getDefaultEyeIrisFollow,
   eyeIrisPalettePresets,
   getEyeIrisPalette,
-} from './config'
+} from './config.js'
 export type {
   EyeIrisPalettePreset,
   EyeIrisGeometryConfig,
@@ -20,4 +20,4 @@ export type {
   EyeIrisConfig,
   EyeIrisOptions,
   EyeIrisUniforms,
-} from './types'
+} from './types.js'

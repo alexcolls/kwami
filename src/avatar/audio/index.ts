@@ -1,1 +1,1 @@
-export { KwamiAudio } from './KwamiAudio'
+export { KwamiAudio } from './KwamiAudio.js'

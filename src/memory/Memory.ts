@@ -1,5 +1,5 @@
-import type { MemoryConfig, MemoryContext, MemorySearchResult } from '../types'
-import { logger } from '../utils/logger'
+import type { MemoryConfig, MemoryContext, MemorySearchResult } from '../types/index.js'
+import { logger } from '../utils/logger.js'
 
 /**
  * Memory - Manages long-term memory for the AI companion

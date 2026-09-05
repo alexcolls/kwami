@@ -1,14 +1,14 @@
-export { Avatar } from './Avatar'
-export { Scene, StarField, type StarFieldConfig } from './scene'
-export { KwamiAudio } from './audio'
-export { BlobXyz, BlobXyzPosition, defaultBlobXyzConfig, createSkin } from './renderers/blob-xyz'
-export { ParticlesFace, defaultParticlesFaceConfig } from './renderers/particles-face'
-export { EyeIris, getDefaultEyeIrisConfig, eyeIrisPalettePresets, getEyeIrisPalette } from './renderers/eye-iris'
+export { Avatar } from './Avatar.js'
+export { Scene, StarField, type StarFieldConfig } from './scene/index.js'
+export { KwamiAudio } from './audio/index.js'
+export { BlobXyz, BlobXyzPosition, defaultBlobXyzConfig, createSkin } from './renderers/blob-xyz/index.js'
+export { ParticlesFace, defaultParticlesFaceConfig } from './renderers/particles-face/index.js'
+export { EyeIris, getDefaultEyeIrisConfig, eyeIrisPalettePresets, getEyeIrisPalette } from './renderers/eye-iris/index.js'
 export {
   avatarBlobPresets,
   avatarBlackHolePresets,
   avatarEyeIrisPresets,
-} from './presets'
+} from './presets.js'
 export {
   BLOB_SKINS,
   BLOB_SKIN_LABELS,
@@ -26,7 +26,7 @@ export {
   randomBlobAudio,
   randomBlobFrequencyBands,
   randomizeBlobState,
-} from './randomizer'
+} from './randomizer.js'
 export type {
   AvatarBlobPreset,
   AvatarBlackHolePreset,
@@ -35,9 +35,9 @@ export type {
   BlackHolePresetState,
   EyeIrisPresetState,
   BlobSkinType,
-} from './presets'
-export type { BlobRandomizerState } from './randomizer'
-export * from './renderers/types'
+} from './presets.js'
+export type { BlobRandomizerState } from './randomizer.js'
+export * from './renderers/types.js'
 
 // Re-export blob types for convenience
 export type {
@@ -46,17 +46,17 @@ export type {
   BlobXyzSkin,
   TricolorSkinConfig,
   BlobXyzAudioEffects,
-} from './renderers/blob-xyz/types'
+} from './renderers/blob-xyz/types.js'
 
 // Re-export particles-face types for convenience
 export type {
   ParticlesFaceConfig,
   ParticlesFaceOptions,
   ParticlesFaceAudioEffects,
-} from './renderers/particles-face/types'
+} from './renderers/particles-face/types.js'
 export type {
   EyeIrisConfig,
   EyeIrisOptions,
   EyeIrisPalettePreset,
   EyeIrisAudioEffects,
-} from './renderers/eye-iris/types'
+} from './renderers/eye-iris/types.js'

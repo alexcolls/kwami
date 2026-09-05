@@ -1,5 +1,5 @@
-import type { AudioConfig } from '../../types'
-import { logger } from '../../utils/logger'
+import type { AudioConfig } from '../../types/index.js'
+import { logger } from '../../utils/logger.js'
 
 /**
  * KwamiAudio - Manages audio playback and frequency analysis for Kwami

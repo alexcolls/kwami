@@ -1,14 +1,14 @@
 import * as THREE from 'three'
-import type { KwamiState } from '../../../types'
-import type { KwamiAudio } from '../../audio'
+import type { KwamiState } from '../../../types/index.js'
+import type { KwamiAudio } from '../../audio/index.js'
 import type {
   ParticlesFaceOptions,
   ParticlesFaceConfig,
   FaceRegion,
   ParticlesFaceAudioEffects,
-} from './types'
-import { defaultParticlesFaceConfig, defaultAudioEffects } from './config'
-import { generateFaceGeometry, getRegionByName } from './face-geometry'
+} from './types.js'
+import { defaultParticlesFaceConfig, defaultAudioEffects } from './config.js'
+import { generateFaceGeometry, getRegionByName } from './face-geometry.js'
 
 const vertexShader = /* glsl */ `
   attribute float size;

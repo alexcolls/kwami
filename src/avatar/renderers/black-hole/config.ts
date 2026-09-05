@@ -15,7 +15,7 @@ import type {
   BlackHoleAudioEffects,
   BlackHoleColorSchemeSelection,
   ColorSchemePreset,
-} from './types'
+} from './types.js'
 
 // Color scheme presets
 export const colorSchemePresets: Record<string, ColorSchemePreset> = {

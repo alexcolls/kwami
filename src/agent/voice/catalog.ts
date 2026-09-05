@@ -1,4 +1,4 @@
-import type { LLMProvider, RealtimeProvider, STTProvider, TTSProvider, VoicePipelineConfig } from './types'
+import type { LLMProvider, RealtimeProvider, STTProvider, TTSProvider, VoicePipelineConfig } from './types.js'
 
 export interface VoiceProviderOption<T extends string> {
   provider: T

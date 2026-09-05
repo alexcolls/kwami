@@ -1,5 +1,5 @@
-import type { SkillsConfig, SkillDefinition, SkillContext, SkillResult } from '../types'
-import { logger } from '../utils/logger'
+import type { SkillsConfig, SkillDefinition, SkillContext, SkillResult } from '../types/index.js'
+import { logger } from '../utils/logger.js'
 
 /**
  * SkillManager - Manages native behaviors and actions

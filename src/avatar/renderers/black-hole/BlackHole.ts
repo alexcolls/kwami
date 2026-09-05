@@ -23,12 +23,12 @@ import type {
   EventHorizonShaderUniforms,
   LensingShaderUniforms,
   BlackHoleColorScheme,
-} from './types'
+} from './types.js'
 import {
   getDefaultBlackHoleConfig,
   getColorsForScheme,
   getEffectsForScheme,
-} from './config'
+} from './config.js'
 import {
   createDiskUniforms,
   createDiskMaterial,
@@ -38,8 +38,8 @@ import {
   createEventHorizonMaterial,
   lensingShader,
   updateDiskColors,
-} from './materials'
-import type { KwamiState } from '../../../types'
+} from './materials.js'
+import type { KwamiState } from '../../../types/index.js'
 
 // Star color palette
 const STAR_PALETTE = [

@@ -3,25 +3,25 @@
 // =============================================================================
 
 // Main class
-export { Kwami } from './Kwami'
+export { Kwami } from './Kwami.js'
 
 // Modules
-export { Avatar, Scene, StarField, type StarFieldConfig, BlobXyz, BlobXyzPosition, KwamiAudio, createSkin, defaultBlobXyzConfig } from './avatar'
-export { Agent } from './agent'
-export { Soul } from './soul'
-export { Memory } from './memory'
-export { ToolRegistry } from './tools'
-export { SkillManager } from './skills'
-export * from './utils/logger'
-export * from './utils/api-client'
+export { Avatar, Scene, StarField, type StarFieldConfig, BlobXyz, BlobXyzPosition, KwamiAudio, createSkin, defaultBlobXyzConfig } from './avatar/index.js'
+export { Agent } from './agent/index.js'
+export { Soul } from './soul/index.js'
+export { Memory } from './memory/index.js'
+export { ToolRegistry } from './tools/index.js'
+export { SkillManager } from './skills/index.js'
+export * from './utils/logger.js'
+export * from './utils/api-client.js'
 
 // Adapters
-export { LiveKitAdapter } from './agent'
+export { LiveKitAdapter } from './agent/index.js'
 
 
 // Voice Pipeline (NEW)
-export { VoiceSession } from './agent'
-export type { VoiceSessionState, VoiceSessionEvents, VoiceSessionOptions } from './agent'
+export { VoiceSession } from './agent/index.js'
+export type { VoiceSessionState, VoiceSessionEvents, VoiceSessionOptions } from './agent/index.js'
 
 // Voice Types (comprehensive)
 export type {
@@ -62,7 +62,7 @@ export type {
   VoicePipelineConfig,
   VoicePipelinePreset,
   VoicePipelineType,
-} from './agent'
+} from './agent/index.js'
 
 // Voice Utilities
 export {
@@ -73,7 +73,7 @@ export {
   PRESET_VOICES,
   findPresetVoice,
   filterPresetVoices,
-} from './agent'
+} from './agent/index.js'
 
 export {
   VOICE_STT_PROVIDERS,
@@ -88,7 +88,7 @@ export {
   VOICE_FALLBACK_TTS_VOICES,
   VOICE_FALLBACK_REALTIME_VOICES,
   VOICE_UI_PRESETS,
-} from './agent'
+} from './agent/index.js'
 
 // Core Types
 export type {
@@ -138,7 +138,7 @@ export type {
   SkillDefinition,
   SkillContext,
   SkillResult,
-} from './types'
+} from './types/index.js'
 
 export {
   soulPresets,
@@ -146,8 +146,8 @@ export {
   getSoulPresetById,
   getSoulPresetsByCategory,
   toSoulConfig,
-} from './soul'
-export type { SoulPreset } from './soul'
+} from './soul/index.js'
+export type { SoulPreset } from './soul/index.js'
 
 // Re-export blob-specific types
 export type {
@@ -155,7 +155,7 @@ export type {
   BlobXyzOptionsConfig,
   TricolorSkinConfig,
   BlobXyzAudioEffects,
-} from './avatar/renderers/blob-xyz/types'
+} from './avatar/renderers/blob-xyz/types.js'
 
 export {
   avatarBlobPresets,
@@ -177,7 +177,7 @@ export {
   randomBlobAudio,
   randomBlobFrequencyBands,
   randomizeBlobState,
-} from './avatar'
+} from './avatar/index.js'
 
 export type {
   AvatarBlobPreset,
@@ -188,7 +188,7 @@ export type {
   EyeIrisPresetState,
   BlobSkinType,
   BlobRandomizerState,
-} from './avatar'
+} from './avatar/index.js'
 
 // Adapter types
-export type { LiveKitAdapterConfig, AgentAdapter, AdapterFactory } from './agent'
+export type { LiveKitAdapterConfig, AgentAdapter, AdapterFactory } from './agent/index.js'

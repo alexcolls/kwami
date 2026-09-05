@@ -1,3 +1,3 @@
-export { Memory } from './Memory'
+export { Memory } from './Memory.js'
 
-export * from './adapters/types'
+export * from './adapters/types.js'

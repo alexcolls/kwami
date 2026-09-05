@@ -1,1 +1,1 @@
-export { ToolRegistry } from './ToolRegistry'
+export { ToolRegistry } from './ToolRegistry.js'

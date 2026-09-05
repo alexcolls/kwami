@@ -1,4 +1,4 @@
-import type { AvatarRenderer, BlobXyzConfig, BlobXyzSkin, SceneConfig } from '../../types'
+import type { AvatarRenderer, BlobXyzConfig, BlobXyzSkin, SceneConfig } from '../../types/index.js'
 
 /**
  * Base interface for avatar renderers

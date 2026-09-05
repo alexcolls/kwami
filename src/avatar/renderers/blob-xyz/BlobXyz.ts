@@ -14,19 +14,19 @@ import {
   type ShaderMaterial,
 } from 'three'
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js'
-import { createBlobXyzGeometry } from './geometry'
-import { animateBlobXyz, type LiquidPhysics } from './animation'
-import { createSkin } from './skins'
-import { defaultBlobXyzConfig } from './config'
-import { BlobXyzPosition } from './position'
+import { createBlobXyzGeometry } from './geometry.js'
+import { animateBlobXyz, type LiquidPhysics } from './animation.js'
+import { createSkin } from './skins/index.js'
+import { defaultBlobXyzConfig } from './config.js'
+import { BlobXyzPosition } from './position.js'
 import {
   getRandomBetween,
   getRandomBoolean,
   getRandomHexColor,
   genDNA,
-} from '../../../utils/randoms'
-import type { BlobXyzOptions, BlobXyzSkin, BlobXyzAudioEffects, TricolorSkinConfig } from './types'
-import { logger } from '../../../utils/logger'
+} from '../../../utils/randoms.js'
+import type { BlobXyzOptions, BlobXyzSkin, BlobXyzAudioEffects, TricolorSkinConfig } from './types.js'
+import { logger } from '../../../utils/logger.js'
 
 
 /**

@@ -1,5 +1,5 @@
-import { getRandomHexColor, getRandomBoolean } from '../../../utils/randoms'
-import type { BlobXyzOptionsConfig } from './types'
+import { getRandomHexColor, getRandomBoolean } from '../../../utils/randoms.js'
+import type { BlobXyzOptionsConfig } from './types.js'
 
 /**
  * Default configuration for blob behavior and appearance
