@@ -1,308 +1,280 @@
-# kwami
+# Kwami
 
-A 3D AI companion library with voice interaction, memory, tools, and customizable avatars. Build interactive AI agents with real-time voice conversations, persistent memory, and beautiful 3D visualizations.
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
+[![npm](https://img.shields.io/npm/v/kwami.svg)](https://www.npmjs.com/package/kwami)
+[![CI](https://github.com/kwami-labs/kwami/actions/workflows/ci.yml/badge.svg)](https://github.com/kwami-labs/kwami/actions/workflows/ci.yml)
+[![Node](https://img.shields.io/badge/node-%3E%3D22.14-brightgreen.svg)](./.nvmrc)
+[![pnpm](https://img.shields.io/badge/pnpm-%3E%3D10-yellow.svg)](https://pnpm.io/)
+
+**Kwami v3** is a Solana NFT collection and fully on-chain web3 app. Connect with [Phantom](https://phantom.app/), fund via [MoonPay](https://www.moonpay.com/), mint a Kwami, publish it, and let others challenge it in a timed voice duel for a share of its account balance.
+
+> Mint · fund · publish · challenge · win (or grow the pot)
+
+---
+
+## Table of contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [How it works](#how-it-works)
+- [Wallet & onboarding](#wallet--onboarding)
+- [Getting started](#getting-started)
+- [Scripts](#scripts)
+- [Project structure](#project-structure)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Security](#security)
+- [Releases](#releases)
+- [License](#license)
+
+---
+
+## Overview
+
+Kwami combines a **Solana NFT**, a **funded on-chain account**, and a **voice AI companion**. Authors mint and publish Kwamis; challengers pay in **SOL** or **USDC** for a **3-minute** voice session to discover the secret word or phrase.
+
+| Outcome                            | Result                                                       |
+| ---------------------------------- | ------------------------------------------------------------ |
+| Challenger says the secret in time | Receives **80%** of the Kwami’s account balance (SOL + USDC) |
+| Time runs out or secret is wrong   | Ticket is lost; the author’s Kwami account keeps growing     |
+
+Kwamis are **immutable** metadata but **transferable** assets — they can be bought and sold. The 3D model can be embedded in third-party apps. Minted owners unlock an **AI program builder** that generates Solana sub-programs for complex financial games before publish.
+
+---
 
 ## Features
 
-- **🎭 3D Avatars**: BlobXyz and Black Hole renderers
-- **🎤 Voice Pipeline**: Real-time voice interaction with STT, LLM, and TTS via LiveKit
-- **🧠 Memory**: Long-term memory support with Zep integration for context-aware conversations
-- **🛠️ Tools**: MCP (Model Context Protocol) integration for external capabilities
-- **🎨 Soul**: Customizable personality templates with emotional traits
-- **⚡ Skills**: Native behaviors and capabilities
-- **🔄 Dynamic Updates**: Update configuration on-the-fly without reconnecting
-- **📦 TypeScript**: Fully typed with comprehensive type definitions
+- **Solana NFT collection** — mint, own, transfer, and trade Kwamis
+- **Phantom wallet** — connect and sign on Solana
+- **MoonPay on-ramp** — fiat → SOL/USDC without leaving the app
+- **Paid voice challenges** — SOL or USDC tickets, 3-minute sessions
+- **Account economics** — 80% reward on win; pot grows on miss
+- **Kwami death** — dies after losing **99%** of account value, or when balance falls under **~$1 USD**
+- **Immutable + transferable** — metadata locked; ownership can change on secondary markets
+- **Embeddable 3D model** — integrate the Kwami avatar in any third-party app
+- **AI program builder** — generate Solana sub-programs and smart-contract logic for custom financial games before publishing
 
-## Installation
+---
 
-```bash
-npm install kwami
-# or
-pnpm add kwami
-# or
-yarn add kwami
+## How it works
+
+```text
+Author                         Challenger
+──────                         ──────────
+Mint Kwami NFT
+Fund account (SOL / USDC)
+Set secret word/phrase
+Customize on-chain logic
+        │  Publish
+        ▼
+                  Pay ticket (SOL / USDC)
+                  Speak to Kwami (≤ 3 min)
+                            │
+              ┌─────────────┴─────────────┐
+              ▼                           ▼
+        Secret guessed              Time / miss
+        → 80% balance               → ticket lost
+          to challenger               pot grows
 ```
 
-### Peer Dependencies
+| Concept                | Detail                                                                                              |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| **Mint & publish**     | Create a Kwami NFT, fund its account, set a secret, optionally customize Solana logic, then publish |
+| **Paid interaction**   | Challengers pay in SOL or USDC for a voice session                                                  |
+| **Voice challenge**    | 3-minute window to discover the secret by speaking to the Kwami                                     |
+| **Reward split**       | Correct guess → 80% of balance to the challenger; miss → author keeps the ticket                    |
+| **Death**              | Loses 99% of account value, or balance under ~$1 USD                                                |
+| **Ownership**          | Immutable metadata; transferable NFT (buy / sell)                                                   |
+| **3D model**           | Embeddable in third-party applications                                                              |
+| **AI program builder** | Generate Solana sub-programs for complex games before publish                                       |
 
-Kwami requires `three` (Three.js) as a peer dependency:
+---
 
-```bash
-npm install three
-```
+## Wallet & onboarding
 
-## Quick Start
+| Integration                         | Role                                   |
+| ----------------------------------- | -------------------------------------- |
+| [Phantom](https://phantom.app/)     | Wallet connect and Solana transactions |
+| [MoonPay](https://www.moonpay.com/) | Fiat on-ramp for SOL / USDC            |
 
-```typescript
-import { Kwami } from 'kwami';
+---
 
-// Get a canvas element
-const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-
-// Create a Kwami instance
-const kwami = new Kwami(canvas, {
-  soul: {
-    name: 'Luna',
-    personality: 'friendly and creative',
-  },
-  agent: {
-    voice: {
-      llm: { model: 'gpt-4o' },
-      tts: { voice: 'nova' },
-    },
-  },
-  avatar: {
-    renderer: 'blob-xyz',
-  },
-});
-
-// Connect and start conversation
-await kwami.connect('user-123', {
-  onUserTranscript: (text) => console.log('User:', text),
-  onAgentResponse: (text) => console.log('Agent:', text),
-  onStateChange: (state) => console.log('State:', state),
-});
-
-// Send a message
-kwami.sendMessage('Hello!');
-
-// Cleanup when done
-await kwami.disconnect();
-```
-
-## Core Concepts
-
-### Avatar
-
-The visual representation of your AI companion. Multiple renderer types are available:
-
-- **BlobXyz**: Animated 3D blob with customizable skins (donut, poles, vintage)
-- **Black Hole**: Minimalist black hole visualization
-
-### Agent
-
-Handles the voice pipeline and AI processing:
-
-- **Voice Pipeline**: STT (Speech-to-Text), LLM (Language Model), TTS (Text-to-Speech)
-- **LiveKit Integration**: Real-time voice communication
-- **Dynamic Configuration**: Update voice settings without reconnecting
-
-### Soul
-
-Defines the AI's personality and behavior:
-
-- Customizable traits and emotional characteristics
-- Pre-built templates (friendly, professional, creative, etc.)
-- System prompts and conversation style
-- Emotional state tracking
-
-### Memory
-
-Long-term memory for context-aware conversations:
-
-- Zep integration for persistent memory
-- Message history and context retrieval
-- Semantic search capabilities
-
-### Tools
-
-External capabilities via MCP (Model Context Protocol):
-
-- Register custom tools
-- Execute external functions
-- Dynamic tool registration/unregistration
-
-### Skills
-
-Native behaviors and capabilities:
-
-- Built-in skill system
-- Custom skill definitions
-- Context-aware execution
-
-## Configuration
-
-### Basic Configuration
-
-```typescript
-const kwami = new Kwami(canvas, {
-  // Avatar configuration
-  avatar: {
-    renderer: 'blob-xyz', // or 'black-hole'
-    scene: {
-      background: 'stars',
-      camera: { position: [0, 0, 5] },
-    },
-  },
-
-  // Agent configuration
-  agent: {
-    voice: {
-      llm: {
-        provider: 'openai',
-        model: 'gpt-4o',
-      },
-      tts: {
-        provider: 'openai',
-        voice: 'nova',
-      },
-      stt: {
-        provider: 'deepgram',
-      },
-    },
-  },
-
-  // Soul configuration
-  soul: {
-    name: 'Luna',
-    personality: 'friendly and creative',
-    traits: ['curious', 'helpful'],
-  },
-
-  // Memory configuration
-  memory: {
-    adapter: 'zep',
-    // Zep configuration...
-  },
-
-  // Tools configuration
-  tools: {
-    mcp: {
-      // MCP server configuration...
-    },
-  },
-});
-```
-
-### Dynamic Updates
-
-Update configuration on-the-fly:
-
-```typescript
-// Update voice settings
-kwami.updateVoice({
-  tts: { voice: 'alloy' },
-});
-
-// Update soul
-kwami.updateSoul({
-  emotionalTone: 'enthusiastic',
-});
-
-// Register a new tool
-kwami.registerTool({
-  name: 'getWeather',
-  description: 'Get current weather',
-  // ...
-});
-```
-
-## Development Setup
+## Getting started
 
 ### Prerequisites
 
-- Node.js — the version in [`.nvmrc`](./.nvmrc) (`nvm use`)
-- [pnpm](https://pnpm.io/) — `corepack enable` picks up the pinned version from `package.json`.
-  `pnpm-lock.yaml` is the lockfile of record and CI installs with `--frozen-lockfile`, so an
-  `npm install` here produces a lockfile CI rejects.
+| Tool                           | Requirement                                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| [Node.js](https://nodejs.org/) | Version in [`.nvmrc`](./.nvmrc) (`>= 22.14`) — `nvm use`                                    |
+| [pnpm](https://pnpm.io/)       | `>= 10` — `corepack enable` picks up `packageManager` from [`package.json`](./package.json) |
 
-### Installation
+`pnpm-lock.yaml` is the lockfile of record. CI installs with `--frozen-lockfile`; an `npm install` here produces a lockfile CI will reject.
+
+### Install
 
 ```bash
+git clone https://github.com/kwami-labs/kwami.git
+cd kwami
 nvm use
 corepack enable
-pnpm install    # also installs the husky hooks
+pnpm install    # also installs husky hooks
 ```
 
-### Scripts
+### Build & verify
+
+```bash
+pnpm build
+pnpm lint && pnpm typecheck && pnpm test:run
+```
+
+### Consume the package
+
+```bash
+pnpm add kwami          # latest stable (main)
+pnpm add kwami@rc       # release candidate (stg)
+pnpm add kwami@dev      # prerelease (dev)
+```
+
+`three` is a peer dependency when embedding the 3D model:
+
+```bash
+pnpm add three
+```
+
+---
+
+## Scripts
 
 ```bash
 # Build
-pnpm build              # bundle + type declarations into dist/
+pnpm build              # bundle + type declarations → dist/
 pnpm dev                # rebuild on change
-pnpm clean              # remove dist/, coverage/ and test output
+pnpm clean              # remove dist/, coverage/, and test output
 
 # Quality
-pnpm lint               # ESLint over src/, tests/ and scripts/
+pnpm lint
 pnpm lint:fix
-pnpm format             # Prettier
+pnpm format
 pnpm format:check
-pnpm typecheck          # src/, then tests/ and the config files
-pnpm audit:ci           # dependency audit gate
+pnpm typecheck
+pnpm audit:ci
 
 # Tests — see docs/testing.md
 pnpm test               # unit
 pnpm test:watch
-pnpm test:coverage      # unit + the coverage ratchet (what CI runs)
-pnpm test:integration   # against a real HTTP server
-pnpm test:e2e           # the built bundle, in a real browser with WebGL
+pnpm test:coverage      # unit + coverage ratchet (CI)
+pnpm test:integration
+pnpm test:e2e           # built bundle in a real browser (WebGL)
 pnpm test:all
 
 # Releases — see docs/releases.md
-pnpm release:dry-run    # print the next version, change nothing
+pnpm release:dry-run    # print next version; change nothing
 ```
 
-### Contributing
+---
 
-Promotion is `feature/* → dev → stg → main`, enforced in CI. Commits must be
-[Conventional Commits](https://www.conventionalcommits.org/) — every version, tag, changelog
-entry and npm publish is derived from them.
+## Project structure
 
-| Guide                                    | Covers                                                         |
-| ---------------------------------------- | -------------------------------------------------------------- |
-| [`CONTRIBUTING.md`](./CONTRIBUTING.md)   | workflow, branches, commit format, what to run before pushing  |
-| [`docs/ci-cd.md`](./docs/ci-cd.md)       | the pipeline, the promotion gate, required repository settings |
-| [`docs/releases.md`](./docs/releases.md) | release channels, what each commit type bumps, troubleshooting |
-| [`docs/testing.md`](./docs/testing.md)   | the unit / integration / e2e layers and which to add to        |
-| [`SECURITY.md`](./SECURITY.md)           | supported versions and how to report a vulnerability           |
-
-### Release channels
-
-```bash
-npm install kwami          # latest stable, released from main
-npm install kwami@rc       # release candidate, from stg
-npm install kwami@dev      # prerelease, from dev
-```
-
-## Project Structure
-
-```
+```text
 kwami/
-├── src/
-│   ├── agent/          # Voice pipeline and LiveKit integration
-│   ├── avatar/         # 3D avatar renderers
-│   ├── memory/         # Memory adapters (Zep)
-│   ├── soul/           # Personality system
-│   ├── skills/         # Native behaviors
-│   ├── tools/          # Tool registry (MCP)
-│   ├── types/          # TypeScript definitions
-│   ├── utils/          # Utilities
-│   ├── Kwami.ts        # Main class
-│   └── index.ts        # Public API exports
+├── src/                  # Library & app source
+│   ├── agent/            # Voice pipeline
+│   ├── avatar/           # 3D renderers
+│   ├── memory/           # Memory adapters
+│   ├── soul/             # Personality
+│   ├── skills/           # Native behaviors
+│   ├── tools/            # Tool registry (MCP)
+│   ├── types/            # TypeScript definitions
+│   └── Kwami.ts          # Public entry surface
 ├── tests/
-│   ├── unit/           # Pure logic, happy-dom
-│   ├── integration/    # Real HTTP server, module seams
-│   └── e2e/            # The built bundle in a real browser (Playwright)
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
 ├── scripts/
-│   ├── ci/             # Pipeline gates (promotion path, audit)
-│   └── release/        # Baseline tag, post-release back-merge
-├── docs/               # ci-cd.md, releases.md, testing.md
-├── dist/               # Build output
+│   ├── ci/               # Pipeline gates
+│   └── release/          # Baseline tag, back-merge
+├── docs/                 # Deep-dive guides
+├── .github/              # Workflows, PR template, CODEOWNERS
+├── CHANGELOG.md          # Generated by semantic-release
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── LICENSE               # Apache-2.0
 └── package.json
 ```
 
-## API Reference
+---
 
-The library exports a comprehensive set of types and utilities. See the TypeScript definitions for full API documentation:
+## Documentation
 
-- `Kwami` - Main class
-- `Avatar`, `Scene`, `StarField` - Avatar components
-- `Agent`, `LiveKitAdapter`, `VoiceSession` - Agent components
-- `Soul` - Personality management
-- `Memory` - Memory operations
-- `ToolRegistry` - Tool management
-- `SkillManager` - Skill execution
+| Document                               | Description                                  |
+| -------------------------------------- | -------------------------------------------- |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)   | Setup, branches, commits, PR checklist       |
+| [SECURITY.md](./SECURITY.md)           | Supported versions & vulnerability reporting |
+| [CHANGELOG.md](./CHANGELOG.md)         | Released changes (generated)                 |
+| [docs/ci-cd.md](./docs/ci-cd.md)       | CI pipeline & promotion gate                 |
+| [docs/releases.md](./docs/releases.md) | Channels, version bumps, troubleshooting     |
+| [docs/testing.md](./docs/testing.md)   | Unit / integration / e2e layers              |
+| [LICENSE](./LICENSE)                   | Apache License 2.0 (full text)               |
+
+---
+
+## Contributing
+
+Contributions are welcome. Please read **[CONTRIBUTING.md](./CONTRIBUTING.md)** before opening a PR.
+
+**Branch promotion** (enforced in CI):
+
+```text
+feature/* ──► dev ──► stg ──► main
+```
+
+- Branch off `dev`; open PRs against `dev`
+- Use [Conventional Commits](https://www.conventionalcommits.org/) — versions, tags, changelog, and npm publishes are derived from them
+- Feature PRs are **squash-merged**; the PR title becomes the release subject
+- Before push: `pnpm lint && pnpm typecheck && pnpm test:unit && pnpm test:integration`
+
+Issue tracker: [github.com/kwami-labs/kwami/issues](https://github.com/kwami-labs/kwami/issues)
+
+---
+
+## Security
+
+**Do not open public issues for vulnerabilities.**
+
+Report privately via [GitHub Security Advisories](https://github.com/kwami-labs/kwami/security/advisories/new) or see **[SECURITY.md](./SECURITY.md)** for supported versions, scope, and response expectations.
+
+---
+
+## Releases
+
+Releases are automated with [semantic-release](https://semantic-release.gitbook.io/). Do not hand-edit `CHANGELOG.md` or the `version` field.
+
+| Branch | npm tag  | Channel           |
+| ------ | -------- | ----------------- |
+| `main` | `latest` | Stable            |
+| `stg`  | `rc`     | Release candidate |
+| `dev`  | `dev`    | Prerelease        |
+
+Details: [docs/releases.md](./docs/releases.md) · History: [CHANGELOG.md](./CHANGELOG.md)
+
+---
 
 ## License
 
-Apache-2.0
+Copyright © 2025 [Alex Colls Outumuro](https://github.com/alexcolls)
+
+Licensed under the **Apache License, Version 2.0**. See the [LICENSE](./LICENSE) file for the full text.
+
+```text
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```

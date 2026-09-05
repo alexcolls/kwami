@@ -74,7 +74,12 @@ function ruleset({ branch, approvals, codeOwners, checks, mergeMethods, botAppId
     target: 'branch',
     enforcement: 'active',
     bypass_actors: [
-      // `always`, not `pull_request`: the release push is not a PR.
+      // Repository admins, so the owner is never locked out of their own branches by a
+      // ruleset this script created.
+      { actor_id: 5, actor_type: 'RepositoryRole', bypass_mode: 'always' },
+      // `always`, not `pull_request`: the release push is not a PR. Dropped automatically
+      // when the organization has not installed GitHub Actions as a bypass actor — see the
+      // 422 fallback below.
       { actor_id: botAppId, actor_type: 'Integration', bypass_mode: 'always' },
     ],
     conditions: { ref_name: { include: [`refs/heads/${branch}`], exclude: [] } },
@@ -104,6 +109,8 @@ function ruleset({ branch, approvals, codeOwners, checks, mergeMethods, botAppId
     ],
   };
 }
+
+let botBypassBlocked = false;
 
 function main() {
   requireAuth();
@@ -157,13 +164,47 @@ function main() {
       continue;
     }
 
-    const result = match
-      ? gh(['api', '-X', 'PUT', `repos/${REPO}/rulesets/${match.id}`], rules)
-      : gh(['api', '-X', 'POST', `repos/${REPO}/rulesets`], rules);
+    const write = (body) =>
+      match
+        ? gh(['api', '-X', 'PUT', `repos/${REPO}/rulesets/${match.id}`], body)
+        : gh(['api', '-X', 'POST', `repos/${REPO}/rulesets`], body);
+
+    let result;
+    try {
+      result = write(rules);
+    } catch (error) {
+      // A repository-level ruleset can only name the GitHub Actions app as a bypass actor
+      // when the owning organization has installed it as one. Without that, GitHub answers
+      // 422 "Actor GitHub Actions integration must be part of the ruleset source or owner
+      // organization". Apply the protection anyway — it is the valuable part — and say
+      // plainly what the operator has to do so releases can still push.
+      const message = String(error.stdout ?? error.stderr ?? error.message ?? '');
+      if (!message.includes('must be part of the ruleset source')) throw error;
+
+      console.log('  ! GitHub Actions cannot be added as a bypass actor from the API here.');
+      botBypassBlocked = true;
+      result = write({
+        ...rules,
+        bypass_actors: rules.bypass_actors.filter((a) => a.actor_type !== 'Integration'),
+      });
+    }
     console.log(`  → ruleset ${result.id} (${result.enforcement})`);
   }
 
   console.log('\nDone. Verify at: https://github.com/' + REPO + '/settings/rules');
+
+  if (botBypassBlocked) {
+    console.log('');
+    console.log('ACTION REQUIRED — releases will be blocked until you do this:');
+    console.log('  The rulesets were created WITHOUT a bypass for github-actions[bot], so');
+    console.log('  release.yml cannot push the release commit, the tag or the back-merges.');
+    console.log('');
+    console.log('  Fix it in one of two ways:');
+    console.log(`    1. https://github.com/${REPO}/settings/rules — open each ruleset, add`);
+    console.log('       "GitHub Actions" to the bypass list, and set it to "Always".');
+    console.log('    2. Or give release.yml a PAT belonging to a repository admin and use it');
+    console.log('       in place of GITHUB_TOKEN for the git remote.');
+  }
 }
 
 main();
