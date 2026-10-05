@@ -206,3 +206,15 @@ Not a substitute for CI, but they catch the obvious before it costs a round trip
 | [`.husky/commit-msg`](../.husky/commit-msg) | `commitlint` on the message                                |
 | [`.husky/pre-commit`](../.husky/pre-commit) | `lint-staged` — ESLint + Prettier on staged files          |
 | [`.husky/pre-push`](../.husky/pre-push)     | blocks direct pushes to channels; `typecheck` + unit suite |
+
+## Environment file
+
+`.env` is encrypted with git-crypt. The blob in git is ciphertext; after unlock the
+working tree is plaintext for the runtime. On a new machine, install git-crypt and
+run this once:
+
+```bash
+git-crypt unlock ~/.config/git-crypt/kwami.io/kwami-cd-pipeline.key
+```
+
+Plaintext `.env.*` overrides stay gitignored. The key file stays outside the repo.
