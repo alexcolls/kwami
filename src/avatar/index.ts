@@ -5,6 +5,21 @@ export { BlobXyz, BlobXyzPosition, defaultBlobXyzConfig, createSkin } from './re
 export { ParticlesFace, defaultParticlesFaceConfig } from './renderers/particles-face/index.js'
 export { EyeIris, getDefaultEyeIrisConfig, eyeIrisPalettePresets, getEyeIrisPalette } from './renderers/eye-iris/index.js'
 export {
+  Jarvis,
+  getDefaultJarvisConfig,
+  getJarvisPalette,
+  jarvisPalettePresets,
+  JarvisAudioAnalyzer,
+} from './renderers/jarvis/index.js'
+export type {
+  JarvisColorConfig,
+  JarvisConfig,
+  JarvisOptions,
+  JarvisPalettePreset,
+  JarvisQuality,
+  JarvisAudioFrame,
+} from './renderers/jarvis/index.js'
+export {
   avatarBlobPresets,
   avatarBlackHolePresets,
   avatarEyeIrisPresets,
