@@ -109,7 +109,7 @@
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^11.0.1",
     "@types/node": "25.3.5",
-    "@types/three": "^0.185.4",
+    "@types/three": "^0.186.0",
     "@vitest/coverage-v8": "^5.0.0",
     "conventional-changelog-conventionalcommits": "9.3.1",
     "eslint": "^10.1.0",
