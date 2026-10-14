@@ -6,8 +6,39 @@ const noise3D = createNoise3D()
 
 const previousDisplacementMap = new WeakMap<Mesh, Float32Array>()
 
+/**
+ * Unit-sphere directions captured the first time a mesh is animated.
+ *
+ * `animateBlobXyz` used to read each vertex, normalize it, displace it, then
+ * add a non-radial liquid offset and write that back. The next frame treated
+ * the drifted point as the new rest direction, so a few seconds of beat-bob
+ * baked a cone into the body that only a geometry rebuild could undo.
+ */
+const restDirectionsMap = new WeakMap<Mesh, Float32Array>()
+
 /** Scratch vector for the per-vertex direction, reused across the whole displacement loop. */
 const scratchDirection = new Vector3()
+
+function getRestDirections(
+  mesh: Mesh,
+  positions: { count: number; getX: (i: number) => number; getY: (i: number) => number; getZ: (i: number) => number },
+): Float32Array {
+  let rest = restDirectionsMap.get(mesh)
+  if (!rest || rest.length !== positions.count * 3) {
+    rest = new Float32Array(positions.count * 3)
+    for (let i = 0; i < positions.count; i++) {
+      const x = positions.getX(i)
+      const y = positions.getY(i)
+      const z = positions.getZ(i)
+      const length = Math.hypot(x, y, z) || 1
+      rest[i * 3] = x / length
+      rest[i * 3 + 1] = y / length
+      rest[i * 3 + 2] = z / length
+    }
+    restDirectionsMap.set(mesh, rest)
+  }
+  return rest
+}
 
 interface AudioSmoothing {
   low: number
@@ -171,6 +202,7 @@ export function animateBlobXyz(
   const tX = perf * timeX
   const tY = perf * timeY
   const tZ = perf * timeZ
+  const restDirections = getRestDirections(mesh, positions)
 
   const baseFreqX = Math.max(0.025, spikeX)
   const baseFreqY = Math.max(0.025, spikeY)
@@ -180,12 +212,13 @@ export function animateBlobXyz(
   const audioFreqBoost = 1 + audioPush * spikeDensity
 
   for (let i = 0; i < positions.count; i++) {
-    vertex.fromBufferAttribute(positions, i)
-
-    // Reused scratch vector. `vertex.clone()` here allocated one Vector3 per vertex per frame
-    // — at the resolution shipped presets use that is roughly 67,000 allocations every frame,
-    // purely to feed the GC.
-    const direction = scratchDirection.copy(vertex).normalize()
+    const restOffset = i * 3
+    const direction = scratchDirection.set(
+      restDirections[restOffset] ?? 0,
+      restDirections[restOffset + 1] ?? 0,
+      restDirections[restOffset + 2] ?? 0,
+    )
+    vertex.copy(direction).multiplyScalar(previousDisplacements[i] ?? 1)
 
     const amplitudeMultiplier =
       Math.abs(direction.x) * amplitudeX +
@@ -315,7 +348,7 @@ export function animateBlobXyz(
     const smoothedDisplacement = previous + (targetDisplacement - previous) * smoothing
     previousDisplacements[i] = smoothedDisplacement
 
-    vertex.normalize().multiplyScalar(smoothedDisplacement)
+    vertex.copy(direction).multiplyScalar(smoothedDisplacement)
 
     if (liquidPhysics) {
       const { velocityX, velocityY, stretch } = liquidPhysics

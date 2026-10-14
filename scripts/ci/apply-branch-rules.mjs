@@ -20,7 +20,7 @@
  *          where work lands, and blocking it on a reviewer stalls a solo repo.
  *   tags   `v*` cannot be deleted, moved or force-updated by anyone, bot included.
  *
- * `github-actions[bot]` bypasses the pull-request rule on the branches: release.yml pushes the
+ * `github-actions[bot]` bypasses the pull-request rule on the branches: release.yml / cd.yml push the
  * release commit, the tag and the post-release back-merges directly. It does NOT bypass the
  * status checks, and it does NOT bypass the tag rules — nothing in the release flow ever needs
  * to delete or move a tag, and semantic-release's entire notion of "what shipped" is those tags.
@@ -188,12 +188,16 @@ function main() {
     console.log('');
     console.log('ACTION REQUIRED — releases will be blocked until you do this:');
     console.log('  The rulesets were created WITHOUT a bypass for github-actions[bot], so');
-    console.log('  release.yml cannot push the release commit, the tag or the back-merges.');
+    console.log(
+      '  release.yml / cd.yml cannot push the release commit, the tag or the back-merges.',
+    );
     console.log('');
     console.log('  Fix it in one of two ways:');
     console.log(`    1. https://github.com/${REPO}/settings/rules — open each ruleset, add`);
     console.log('       "GitHub Actions" to the bypass list, and set it to "Always".');
-    console.log('    2. Or give release.yml a PAT belonging to a repository admin and use it');
+    console.log(
+      '    2. Or give release.yml / cd.yml a PAT belonging to a repository admin and use it',
+    );
     console.log('       in place of GITHUB_TOKEN for the git remote.');
   }
 }
