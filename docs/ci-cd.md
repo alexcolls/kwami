@@ -221,7 +221,7 @@ working tree is plaintext for the runtime. On a new machine, install git-crypt a
 run this once:
 
 ```bash
-git-crypt unlock ~/.config/git-crypt/kwami.io/kwami-cd-pipeline.key
+git-crypt unlock ~/.config/git-crypt/kwami.io/kwami.key
 ```
 
 Plaintext `.env.*` overrides stay gitignored. The key file stays outside the repo.
