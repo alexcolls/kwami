@@ -92,3 +92,29 @@ describe('Soul.loadTemplate', () => {
     expect(soul.getName()).toBe('Luna');
   });
 });
+
+describe('jarvis preset', () => {
+  const jarvis = getSoulPresetById('jarvis')!;
+
+  it('is written for Castilian Spanish', () => {
+    expect(jarvis.language).toBe('es-ES');
+    expect(jarvis.systemPrompt).toContain('castellano de España');
+  });
+
+  it('fits the budget Gemini Live keeps a persona under', () => {
+    expect(jarvis.systemPrompt.length).toBeLessThanOrEqual(1500);
+  });
+
+  it('only uses traits the agent turns into directives, signed', () => {
+    // The agent reads -100..100 with 0 as neutral; a reserved character needs a negative.
+    expect(jarvis.emotionalTraits.socialness).toBeLessThan(0);
+  });
+
+  it('ships its behaviour as a charter, not inside the soul', () => {
+    expect(jarvis.charter).toMatchObject({ enabled: true, addressAs: 'señor', formal: true });
+    // The form of address and the objection rule belong to the charter, where
+    // they can be changed; written into the soul they would contradict it.
+    expect(jarvis.systemPrompt).not.toContain('señor');
+    expect(jarvis.systemPrompt).not.toContain('una vez');
+  });
+});

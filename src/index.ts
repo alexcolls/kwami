@@ -7,6 +7,15 @@ export { Kwami } from './Kwami.js'
 
 // Modules
 export { Avatar, Scene, StarField, type StarFieldConfig, BlobXyz, BlobXyzPosition, KwamiAudio, createSkin, defaultBlobXyzConfig } from './avatar/index.js'
+export { Jarvis, getDefaultJarvisConfig, getJarvisPalette, jarvisPalettePresets, JarvisAudioAnalyzer } from './avatar/index.js'
+export type {
+  JarvisColorConfig,
+  JarvisConfig,
+  JarvisOptions,
+  JarvisPalettePreset,
+  JarvisQuality,
+  JarvisAudioFrame,
+} from './avatar/index.js'
 export { Agent } from './agent/index.js'
 export { Soul } from './soul/index.js'
 export { Memory } from './memory/index.js'
