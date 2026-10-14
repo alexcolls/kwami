@@ -1,0 +1,169 @@
+name: release-channel
+
+# Reusable release job for one channel. Callers:
+#
+#   release.yml  →  dev / stg   (prereleases)
+#   cd.yml       →  main        (stable + best-effort npm publish of the latest tag)
+#
+# semantic-release versions, regenerates CHANGELOG.md, bumps package.json, tags, cuts the
+# GitHub Release and publishes to npm when NPM_TOKEN is set. On `main` it also back-merges
+# into `stg` and `dev` (scripts/release/sync-branches.mjs).
+#
+# `publish_latest` is the safety net for a token-less semantic-release: take the newest
+# unpublished `v*` tag and `pnpm publish` it. Without NPM_TOKEN the step notices and
+# continues — changelog and GitHub Release still happened.
+on:
+  workflow_call:
+    inputs:
+      branch:
+        description: Channel to release (`main`, `stg`, or `dev`).
+        required: true
+        type: string
+      tested_sha:
+        description: Commit `ci` tested. Empty on a manual run — the drift guard stands down.
+        required: false
+        type: string
+        default: ''
+      publish_latest:
+        description: After the release, publish the newest unpublished v* tag if NPM_TOKEN is set.
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      NPM_TOKEN:
+        description: npm auth. Absent → version, changelog and GitHub Release still run.
+        required: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    name: semantic-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TESTED_SHA: ${{ inputs.tested_sha }}
+      RELEASE_BRANCH: ${{ inputs.branch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The branch, not the tested SHA: semantic-release commits and pushes onto it. The
+          # guard below refuses to release if the two have drifted apart.
+          ref: ${{ inputs.branch }}
+          # Full history and tags — semantic-release derives everything from them.
+          fetch-depth: 0
+          fetch-tags: true
+          # We point origin at a token URL below so the back-merge pushes work too.
+          persist-credentials: false
+
+      - name: Authenticate git for the release and back-merge pushes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+      # semantic-release runs `git tag --merged <branch>` for every channel in .releaserc.cjs.
+      # checkout only creates a local ref for the branch being released, so `main` is missing
+      # when releasing from stg/dev (and vice versa) — materialise the rest from origin/*.
+      - name: Materialise release channel branches
+        run: |
+          set -euo pipefail
+          for b in main stg dev; do
+            if git show-ref --verify --quiet "refs/heads/${b}"; then
+              echo "local ${b} already exists"
+            else
+              git branch "${b}" "origin/${b}"
+              echo "created local ${b} from origin/${b}"
+            fi
+          done
+          git branch -vv | grep -E 'main|stg|dev'
+
+      # A push that landed while CI was running has its own CI run behind it; let that one
+      # release rather than shipping a commit these gates never saw.
+      - name: Refuse to release an untested tip
+        run: |
+          set -euo pipefail
+          tip="$(git rev-parse HEAD)"
+          if [ -z "${TESTED_SHA:-}" ]; then
+            echo "::notice::Manual run on ${RELEASE_BRANCH} at ${tip} — no ci run to compare against."
+          elif [ "$tip" != "$TESTED_SHA" ]; then
+            echo "::notice::Branch tip ${tip} is ahead of the tested commit ${TESTED_SHA} — its own run will release."
+            echo 'skip=true' >> "$GITHUB_ENV"
+          fi
+
+      - if: env.skip != 'true'
+        uses: ./.github/actions/setup-workspace
+
+      # Without a `v*` tag semantic-release would call this a first release and jump to 1.0.0 —
+      # a downgrade from the 2.1.0 already on npm.
+      - name: Ensure the release baseline tag exists
+        if: env.skip != 'true'
+        run: pnpm release:baseline
+
+      - name: Record existing tags
+        if: env.skip != 'true'
+        run: git tag > "$RUNNER_TEMP/tags-before.txt"
+
+      # The build has to run before the release: @semantic-release/npm publishes whatever
+      # `files` points at, and `dist/` is not committed.
+      - name: Build
+        if: env.skip != 'true'
+        run: pnpm build
+
+      - name: Release
+        if: env.skip != 'true'
+        run: pnpm release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Absent on a repo that has not been given a token: .releaserc.cjs then skips the
+          # publish and still does everything else.
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
+
+      # Production CD only (`cd.yml`). semantic-release already published when NPM_TOKEN was
+      # set; this catches a tag that was cut without a registry publish, and is a no-op when
+      # every v* release is already on npm or the secret is missing.
+      - name: Publish latest to npm
+        if: ${{ inputs.publish_latest && env.skip != 'true' }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
+        run: |
+          set -euo pipefail
+          if [ -z "${NPM_TOKEN:-}" ]; then
+            echo '::notice::NPM_TOKEN is not set — changelog and GitHub Release still ran; skipping npm publish.'
+            echo 'npm_publish=skipped-no-token' >> "$GITHUB_ENV"
+            exit 0
+          fi
+          printf '//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN" >> "$HOME/.npmrc"
+          pnpm publish:latest
+          echo 'npm_publish=ran' >> "$GITHUB_ENV"
+
+      - name: Summary
+        if: always() && env.skip != 'true'
+        run: |
+          set -euo pipefail
+          git tag > "$RUNNER_TEMP/tags-after.txt"
+          cut="$(comm -13 "$RUNNER_TEMP/tags-before.txt" "$RUNNER_TEMP/tags-after.txt" || true)"
+          {
+            echo '### Release'
+            echo ''
+            if [ -n "$cut" ]; then
+              printf '%s\n' "$cut" | sed 's/^/- /'
+            else
+              echo 'No releasable changes on this channel.'
+            fi
+            if [ "${{ inputs.publish_latest }}" = 'true' ]; then
+              echo ''
+              echo "### npm"
+              echo ''
+              echo "${npm_publish:-not run}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

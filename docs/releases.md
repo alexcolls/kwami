@@ -5,7 +5,9 @@ commit history by [semantic-release](https://semantic-release.gitbook.io/). Noth
 hand — the `version` field and `CHANGELOG.md` are outputs, not inputs.
 
 - Config: [`.releaserc.cjs`](../.releaserc.cjs)
-- Workflow: [`.github/workflows/release.yml`](../.github/workflows/release.yml)
+- Prereleases: [`.github/workflows/release.yml`](../.github/workflows/release.yml) (`dev`, `stg`)
+- Production CD: [`.github/workflows/cd.yml`](../.github/workflows/cd.yml) (`main`)
+- Shared job: [`.github/workflows/release-channel.yml`](../.github/workflows/release-channel.yml)
 - Branch model: [`docs/ci-cd.md`](./ci-cd.md)
 
 ## Channels
@@ -56,17 +58,21 @@ BREAKING CHANGE: `agent.voice.pipeline` is now `agent.voice.type`. Replace
 ## The pipeline
 
 1. A PR lands on a channel. `ci` runs the full matrix on the push.
-2. `release.yml` fires on `workflow_run: [ci] completed` — only for a **success** on a **push**,
-   so no version is ever cut from a red commit.
+2. A green **push** to `dev` or `stg` fires `release.yml`. A green **push** to `main` (a
+   successful merge) fires `cd.yml`. Both only run after `workflow_run: [ci] completed` with
+   `success`, so no version is ever cut from a red commit.
 3. It refuses to run if the branch tip has drifted ahead of the commit `ci` tested; that later
    push has its own run behind it and will release instead.
 4. `pnpm release:baseline` tags `v<current version>` if no `v*` tag exists yet, so the first run
    bumps _over_ the version already on npm instead of restarting at 1.0.0.
 5. `pnpm build` produces `dist/` — `files` points at it and it is not committed.
 6. semantic-release analyses the commits, works out the next version, regenerates
-   `CHANGELOG.md`, bumps `package.json`, publishes to npm, pushes the release commit and tag,
-   and cuts the GitHub Release.
-7. On `main` only, [`sync-branches.mjs`](../scripts/release/sync-branches.mjs) back-merges `main`
+   `CHANGELOG.md`, bumps `package.json`, publishes to npm when `NPM_TOKEN` is set, pushes the
+   release commit and tag, and cuts the GitHub Release.
+7. On `main` only (`cd.yml`), [`publish-latest.mjs`](../scripts/release/publish-latest.mjs)
+   then publishes the newest unpublished `v*` tag to npm `latest` if `NPM_TOKEN` is set — a
+   no-op when the version is already on the registry or the secret is missing.
+8. On `main` only, [`sync-branches.mjs`](../scripts/release/sync-branches.mjs) back-merges `main`
    into `stg` and `dev`.
 
 ### Why the back-merge
@@ -88,10 +94,12 @@ Anything else conflicting is a real conflict: the script aborts the merge and as
 
 Publishing is conditional on the `NPM_TOKEN` secret. Without it the run still versions, tags,
 writes the changelog and cuts the GitHub Release — a fork, or a repo that has not been given a
-token yet, gets the whole pipeline minus the publish rather than a red build.
+token yet, gets the whole pipeline minus the publish rather than a red build. On `main`,
+`cd.yml` then runs `pnpm publish:latest` with the same rule: publish if the token is present,
+skip with a notice if it is not.
 
 Publishes carry [npm provenance](https://docs.npmjs.com/generating-provenance-statements): the
-`id-token: write` permission in `release.yml` lets npm attest the tarball to that workflow run.
+`id-token: write` permission lets npm attest the tarball to that workflow run.
 
 ## First run
 
@@ -103,8 +111,8 @@ git checkout main && git pull
 pnpm release:baseline    # tags v2.1.0 at the merge-base and pushes it
 ```
 
-`release.yml` runs this itself on every release, so it also happens automatically — doing it by
-hand first just makes the first `--dry-run` honest.
+`release.yml` and `cd.yml` run this themselves on every release, so it also happens
+automatically — doing it by hand first just makes the first `--dry-run` honest.
 
 ## Running it locally
 
@@ -128,5 +136,5 @@ workflows. If something outside Actions is watching, it should honour the `[skip
 marker in the message.
 
 **A promote PR conflicts on `CHANGELOG.md` / `package.json`.** The back-merge did not run or
-failed. Re-run `release.yml` on `main`, or merge `main` into the channel by hand taking `main`'s
+failed. Re-run `cd.yml` on `main`, or merge `main` into the channel by hand taking `main`'s
 changelog and the branch's package.json with `main`'s version.
