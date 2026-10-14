@@ -76,7 +76,7 @@ export interface KwamiCallbacks {
 // Avatar
 // -----------------------------------------------------------------------------
 
-export type AvatarRendererType = 'blob-xyz' | 'black-hole' | 'particles-face' | 'eye-iris'
+export type AvatarRendererType = 'blob-xyz' | 'black-hole' | 'particles-face' | 'eye-iris' | 'jarvis'
 
 export interface AvatarConfig {
   renderer?: AvatarRendererType
@@ -84,6 +84,7 @@ export interface AvatarConfig {
   blackHole?: BlackHoleConfig
   particlesFace?: ParticlesFaceConfig
   eyeIris?: EyeIrisConfig
+  jarvis?: JarvisAvatarConfig
   scene?: SceneConfig
   interaction?: InteractionConfig
   audio?: {
@@ -166,6 +167,28 @@ export interface EyeIrisConfig {
     pupilMotion?: boolean
     pupilMotionStrength?: number
   }
+  scale?: number
+}
+
+/** Declarative config for the `jarvis` renderer (see `JarvisConfig` for field docs). */
+export interface JarvisAvatarConfig {
+  palettePreset?: 'holo-cyan' | 'neon-violet' | 'arc-white' | 'alert-amber'
+  color?: {
+    primary?: string
+    secondary?: string
+    accent?: string
+    alert?: string
+    background?: string
+    backgroundGlow?: string
+  }
+  intensity?: number
+  reactivity?: number
+  rotationSpeed?: number
+  parallax?: number
+  quality?: 'low' | 'medium' | 'high'
+  backdrop?: boolean
+  labels?: boolean
+  title?: string
   scale?: number
 }
 

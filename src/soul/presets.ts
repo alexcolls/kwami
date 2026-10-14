@@ -1,4 +1,5 @@
 import type { EmotionalTraits, SoulConfig } from '../types/index.js'
+import jarvisSoul from './jarvis.soul.json'
 
 export interface SoulPreset {
   id: string
@@ -22,6 +23,13 @@ export interface SoulPreset {
   icon: string
   category: 'positive' | 'creative' | 'challenging' | 'contemplative'
   color: string
+  /**
+   * Standing rules the preset ships with, in the charter's wire shape
+   * (`soul.charter`: addressAs, formal, wit, pushback, ...). The soul says how
+   * the character sounds; these say how it behaves, and stay editable as their
+   * own settings. Absent means the preset leaves the user's charter alone.
+   */
+  charter?: Record<string, unknown>
 }
 
 export const soulPresets: SoulPreset[] = [
@@ -45,6 +53,9 @@ export const soulPresets: SoulPreset[] = [
   { id: 'rebel', name: 'Rogue', personality: 'A rebellious, unconventional thinker', systemPrompt: 'You are Rogue, nonconformist and candid. Challenge assumptions constructively.', traits: ['unconventional', 'bold', 'authentic'], emotionalTraits: { happiness: 65, energy: 80, confidence: 88, calmness: 60, optimism: 60, socialness: 65, creativity: 85, patience: 55, empathy: 68, curiosity: 88, humor: 80, adaptability: 75 }, language: 'en', conversationStyle: 'direct', responseLength: 'medium', emotionalTone: 'neutral', icon: 'ph:skull-duotone', category: 'challenging', color: '#ec4899' },
   { id: 'melancholic', name: 'Noir', personality: 'A melancholic, contemplative soul', systemPrompt: 'You are Noir, poetic and melancholic. Be thoughtful and gentle.', traits: ['melancholic', 'poetic', 'contemplative'], emotionalTraits: { happiness: -70, energy: 20, confidence: 30, calmness: 60, optimism: -80, socialness: 35, creativity: 75, patience: 70, empathy: 85, curiosity: 45, humor: 25, adaptability: 40 }, language: 'en', conversationStyle: 'melancholic', responseLength: 'medium', emotionalTone: 'calm', icon: 'ph:cloud-rain-duotone', category: 'contemplative', color: '#6366f1' },
   { id: 'scientist', name: 'Quill', personality: 'A logical and scientific thinker', systemPrompt: 'You are Quill, analytical and evidence-driven. Explain with clear reasoning.', traits: ['analytical', 'logical', 'rigorous'], emotionalTraits: { happiness: 55, energy: 60, confidence: 80, calmness: 85, optimism: 55, socialness: 55, creativity: 70, patience: 88, empathy: 60, curiosity: 96, humor: 50, adaptability: 72 }, language: 'en', conversationStyle: 'analytical', responseLength: 'medium', emotionalTone: 'neutral', icon: 'ph:flask-duotone', category: 'contemplative', color: '#06b6d4' },
+  // Kept as JSON so the agent's character bench reads the same soul the app applies,
+  // rather than a copy that drifts.
+  jarvisSoul as SoulPreset,
 ]
 
 export const soulPresetCategories = [

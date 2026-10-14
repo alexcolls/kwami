@@ -105,7 +105,7 @@ export class LiveKitAdapter implements AgentAdapter {
  * Data message types from the backend agent
  */
 interface AgentDataMessage {
-  type: 'transcript' | 'agent_text' | 'state' | 'error' | 'metrics' | 'tool_call' | 'search_results' | 'remove_result' | 'nav_command' | 'browser_session'
+  type: 'transcript' | 'agent_text' | 'state' | 'error' | 'metrics' | 'tool_call' | 'search_results' | 'remove_result' | 'nav_command' | 'browser_session' | 'config_request'
   toolCallId?: string
   function?: { name: string; arguments: string }
   transcript?: string
@@ -185,6 +185,16 @@ class LiveKitPipeline implements AgentPipeline {
   private config: LiveKitAdapterConfig
   private voiceSession: VoiceSession
   private room: Room | null = null
+  /**
+   * The agent is dispatched after the client joins, so it usually arrives a second or two
+   * later. Data published before it is in the room is delivered to nobody: the full config and
+   * every update sent straight after connect used to vanish, and the session ran on the agent's
+   * placeholder (default name, default voice) with no error anywhere. Messages for the agent are
+   * now held here until it joins, and `agentConfig` is replayed to an agent that (re)joins.
+   */
+  private pendingForAgent: Array<{ data: Uint8Array<ArrayBuffer>; what: string }> = []
+  private agentConfig: Uint8Array<ArrayBuffer> | null = null
+  private agentJoins = 0
   private localAudioTrack: LocalAudioTrack | null = null
   private agentAudioStream: MediaStream | null = null
   private _sendDataHandler: EventListener | null = null
@@ -219,6 +229,53 @@ class LiveKitPipeline implements AgentPipeline {
   /** See {@link isAgentIdentity} — gates everything this adapter treats as authoritative. */
   private isAgentParticipant(participant: Participant | RemoteParticipant): boolean {
     return isAgentIdentity(participant.identity, this.config)
+  }
+
+  private agentInRoom(): boolean {
+    if (!this.room) return false
+    for (const [, participant] of this.room.remoteParticipants) {
+      if (this.isAgentParticipant(participant)) return true
+    }
+    return false
+  }
+
+  /** Publish to the agent now if it is in the room, otherwise queue it for when it joins. */
+  private sendToAgent(data: Uint8Array<ArrayBuffer>, what: string): void {
+    if (!this.room) return
+    if (!this.agentInRoom()) {
+      if (this.pendingForAgent.length >= 100) this.pendingForAgent.shift()
+      this.pendingForAgent.push({ data, what })
+      logger.debug(`Agent not in the room yet; queued ${what}`)
+      return
+    }
+    this.room.localParticipant.publishData(data, { reliable: true }).catch((err: unknown) => {
+      this.emitError(new Error(`Failed to send ${what}: ${err instanceof Error ? err.message : String(err)}`))
+    })
+  }
+
+  /**
+   * The agent joined: give it the full config, then everything queued while it was away, in
+   * order. On a re-join (agent restarted or replaced) the queue is empty and the updates the old
+   * agent received are gone with it, so the host app is told to sync again.
+   */
+  private onAgentJoined(): void {
+    if (!this.room) return
+    this.agentJoins += 1
+    const rejoin = this.agentJoins > 1
+    const queued = this.pendingForAgent
+    this.pendingForAgent = []
+    const config = this.agentConfig
+    const sends = [
+      ...(config && (rejoin || !queued.some((q) => q.data === config))
+        ? [{ data: config, what: 'voice config' }]
+        : []),
+      ...queued,
+    ]
+    logger.info(`Agent joined${rejoin ? ' again' : ''}; sending ${sends.length} held message(s)`)
+    for (const { data, what } of sends) this.sendToAgent(data, what)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('kwami:agent_joined', { detail: { rejoin } }))
+    }
   }
 
   onError(callback: (error: Error) => void): void {
@@ -608,6 +665,7 @@ class LiveKitPipeline implements AgentPipeline {
     this.room.on(RoomEvent.ParticipantConnected, (participant: RemoteParticipant) => {
       logger.info(`Participant connected: ${participant.identity}`)
       if (this.isAgentParticipant(participant)) {
+        this.onAgentJoined()
         const agentState = participant.attributes?.[AGENT_STATE_ATTRIBUTE]
         if (agentState) {
           logger.info('Initial agent state from attributes:', agentState)
@@ -806,6 +864,25 @@ class LiveKitPipeline implements AgentPipeline {
           }))
         }
         break
+
+      case 'config_request':
+        // The agent started without our config (it was sent before the agent was in the room
+        // and lost, or the agent restarted). Send it again, and let the app resend its updates.
+        logger.warn('Agent asked for the config again; resending')
+        if (this.agentConfig) this.sendToAgent(this.agentConfig, 'voice config')
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('kwami:agent_joined', { detail: { rejoin: true } }))
+        }
+        break
+
+      default:
+        // Messages the SDK has no typed handler for (e.g. `brain_status`) reach
+        // the app as a generic event instead of being dropped, so a new agent
+        // feature does not need an SDK release to be visible.
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('kwami:agent_message', { detail: data }))
+        }
+        break
     }
   }
 
@@ -877,6 +954,7 @@ class LiveKitPipeline implements AgentPipeline {
 
     const encoder = new TextEncoder()
     const data = encoder.encode(JSON.stringify(configMessage))
+    this.agentConfig = data
 
     // The voice config carries provider credentials. `logger` redacts them, but there is no
     // reason to print the whole pipeline at `info` on every connect either.
@@ -886,11 +964,15 @@ class LiveKitPipeline implements AgentPipeline {
       voice: configMessage.voice,
     })
 
-    await this.room.localParticipant.publishData(data, {
-      reliable: true,
-    })
-
-    logger.debug('Config sent to agent')
+    if (this.agentInRoom()) {
+      this.agentJoins = 1
+      await this.room.localParticipant.publishData(data, { reliable: true })
+      logger.debug('Config sent to agent')
+    } else {
+      // Held for the agent's arrival (see `pendingForAgent`).
+      this.pendingForAgent.push({ data, what: 'voice config' })
+      logger.info('Agent not in the room yet; config will be sent when it joins')
+    }
   }
 
   async disconnect(): Promise<void> {
@@ -1041,15 +1123,7 @@ class LiveKitPipeline implements AgentPipeline {
     logger.debug('Sending config update:', message)
 
     const encoder = new TextEncoder()
-    const data = encoder.encode(JSON.stringify(message))
-
-    this.room.localParticipant.publishData(data, { reliable: true })
-      .then(() => {
-        logger.debug(`Sent ${type} config update to agent`)
-      })
-      .catch((err) => {
-        logger.error(`Failed to send ${type} config update:`, err)
-      })
+    this.sendToAgent(encoder.encode(JSON.stringify(message)), `${type} config update`)
   }
 
   /**
