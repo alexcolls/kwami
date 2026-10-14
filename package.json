@@ -112,7 +112,7 @@
     "@types/three": "^0.186.0",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.4",
-    "conventional-changelog-conventionalcommits": "9.3.1",
+    "conventional-changelog-conventionalcommits": "10.4.0",
     "eslint": "^10.1.0",
     "globals": "^17.4.0",
     "happy-dom": "^20.14.6",
@@ -160,7 +160,7 @@
       "nanoid": ">=3.3.18",
       "picomatch": ">=4.0.4",
       "postcss": ">=8.5.18",
-      "conventional-changelog-conventionalcommits": "9.3.1"
+      "conventional-changelog-writer": ">=9.3.0"
     }
   }
 }
