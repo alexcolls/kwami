@@ -6,6 +6,7 @@
 [![npm dev](https://img.shields.io/npm/v/kwami/dev.svg?label=dev)](https://www.npmjs.com/package/kwami?activeTab=versions)
 [![CI](https://github.com/kwami-labs/kwami/actions/workflows/ci.yml/badge.svg)](https://github.com/kwami-labs/kwami/actions/workflows/ci.yml)
 [![Release](https://github.com/kwami-labs/kwami/actions/workflows/release.yml/badge.svg)](https://github.com/kwami-labs/kwami/actions/workflows/release.yml)
+[![CD](https://github.com/kwami-labs/kwami/actions/workflows/cd.yml/badge.svg)](https://github.com/kwami-labs/kwami/actions/workflows/cd.yml)
 [![Node](https://img.shields.io/node/v/kwami.svg)](./.nvmrc)
 [![pnpm](https://img.shields.io/badge/pnpm-%3E%3D10-F69220.svg?logo=pnpm&logoColor=white)](https://pnpm.io/)
 
