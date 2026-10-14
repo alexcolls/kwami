@@ -8,6 +8,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 New releases are prepended by semantic-release from Conventional Commits. Historical
 entries below the automation baseline were reconstructed from git history.
 
+## [2.2.0](https://github.com/kwami-labs/kwami/compare/v2.1.1...v2.2.0) (2026-10-14)
+
+### Features
+
+* **avatar:** add the jarvis holographic HUD renderer ([#124](https://github.com/kwami-labs/kwami/issues/124)) ([088eda1](https://github.com/kwami-labs/kwami/commit/088eda1093e8d0f20394abb87475cdbc19dd9bf0))
+* **ci:** declare branch and tag rulesets as reviewable JSON ([c585c66](https://github.com/kwami-labs/kwami/commit/c585c66c78cb6d91a8aa9a7bf76b5a0da4fc5853))
+* **ci:** declare branch and tag rulesets as reviewable JSON ([#87](https://github.com/kwami-labs/kwami/issues/87)) ([4a382b2](https://github.com/kwami-labs/kwami/commit/4a382b21b5a53d58e18f39efeb4d82d8ed2fc87c))
+* **ci:** release main through a dedicated cd pipeline ([#126](https://github.com/kwami-labs/kwami/issues/126)) ([e540248](https://github.com/kwami-labs/kwami/commit/e540248063fcfca431d922fe938d9669d7393c38))
+* **release:** add a manual path to publish the latest stable tag to npm ([#96](https://github.com/kwami-labs/kwami/issues/96)) ([f53d0d0](https://github.com/kwami-labs/kwami/commit/f53d0d022e5e3ecd8ce8c4fce52e24d20c3f1a7f))
+* **release:** publish the newest unpublished tag to its channel ([#99](https://github.com/kwami-labs/kwami/issues/99)) ([58ae123](https://github.com/kwami-labs/kwami/commit/58ae123ce30eac2c225cb57b110c4f728aa1e65f))
+
+### Bug Fixes
+
+* **avatar:** add .js extensions to Scene imports so declarations resolve ([#93](https://github.com/kwami-labs/kwami/issues/93)) ([b1b6010](https://github.com/kwami-labs/kwami/commit/b1b60105ebb0abab27b1ab76aad1835c2f117ec2))
+* **avatar:** keep blob rest directions so liquid stretch does not bake a cone ([#125](https://github.com/kwami-labs/kwami/issues/125)) ([81c54dc](https://github.com/kwami-labs/kwami/commit/81c54dcff1090af3496644d366ad548fd38444dc))
+* **build:** pin changelog preset to v9 so semantic-release can write notes ([31b8ed7](https://github.com/kwami-labs/kwami/commit/31b8ed75b0378f216833120eb5d1da50ad1d946a))
+* **build:** publish to npm via OIDC provenance when no NPM_TOKEN is set ([#97](https://github.com/kwami-labs/kwami/issues/97)) ([6a6587e](https://github.com/kwami-labs/kwami/commit/6a6587e15b4c286851b408f1aa6749e0ae83787b))
+* **build:** unblock CI install and typecheck so releases can publish ([#91](https://github.com/kwami-labs/kwami/issues/91)) ([86cc69c](https://github.com/kwami-labs/kwami/commit/86cc69cd3ffdd3d81eeea372e4ce9402b5bfeb90))
+* **ci:** patch transitive advisories that fail the audit gate ([#127](https://github.com/kwami-labs/kwami/issues/127)) ([40bbead](https://github.com/kwami-labs/kwami/commit/40bbead0d7b73c8bdd97069cbd67b2e7d6273a50))
+* repair lockfile install conflict and copy LiveKit data payloads ([#92](https://github.com/kwami-labs/kwami/issues/92)) ([9931951](https://github.com/kwami-labs/kwami/commit/993195185d0e10957bee0a43dd7fc2f05125cb55))
+* restore inert avatar features and harden agent and renderer lifecycle ([#86](https://github.com/kwami-labs/kwami/issues/86)) ([f0a3add](https://github.com/kwami-labs/kwami/commit/f0a3add9f29ddfef63fbfbfec3e54a104dd3b6c6))
+
+### Build & Dependencies
+
+* **deps:** bump the minor-and-patch group across 1 directory with 4 updates ([#81](https://github.com/kwami-labs/kwami/issues/81)) ([99e7275](https://github.com/kwami-labs/kwami/commit/99e7275e39be34400cae14d8bffe41a765bd6208))
+* **deps:** bump the three-ecosystem group with 2 updates ([#77](https://github.com/kwami-labs/kwami/issues/77)) ([35fdd92](https://github.com/kwami-labs/kwami/commit/35fdd92a9df7ec8574ae0c516f4baed3d24512cb))
+
 ## [2.2.0-dev.1](https://github.com/kwami-labs/kwami/compare/v2.1.1...v2.2.0-dev.1) (2026-09-16)
 
 ### Features
