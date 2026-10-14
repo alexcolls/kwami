@@ -46,6 +46,9 @@ module.exports = {
       {
         preset: 'conventionalcommits',
         presetConfig: {
+          // Preset 10 reads `effect`, not the v9 `hidden` flag. A missing effect
+          // defaults to `bump`, which prints the commit. `hidden` keeps it out of
+          // the notes. Version bumps still come from releaseRules above.
           types: [
             { type: 'feat', section: 'Features' },
             { type: 'fix', section: 'Bug Fixes' },
@@ -53,11 +56,11 @@ module.exports = {
             { type: 'refactor', section: 'Refactoring' },
             { type: 'revert', section: 'Reverts' },
             { type: 'build', section: 'Build & Dependencies' },
-            { type: 'docs', section: 'Documentation', hidden: true },
-            { type: 'test', section: 'Tests', hidden: true },
-            { type: 'ci', section: 'CI', hidden: true },
-            { type: 'chore', section: 'Chores', hidden: true },
-            { type: 'style', section: 'Styling', hidden: true },
+            { type: 'docs', section: 'Documentation', effect: 'hidden' },
+            { type: 'test', section: 'Tests', effect: 'hidden' },
+            { type: 'ci', section: 'CI', effect: 'hidden' },
+            { type: 'chore', section: 'Chores', effect: 'hidden' },
+            { type: 'style', section: 'Styling', effect: 'hidden' },
           ],
         },
       },

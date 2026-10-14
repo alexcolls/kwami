@@ -3,7 +3,8 @@
 How a change gets from a feature branch to a published package.
 
 - Pipeline: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
-- Releases: [`.github/workflows/release.yml`](../.github/workflows/release.yml) · [`docs/releases.md`](./releases.md)
+- Prereleases: [`.github/workflows/release.yml`](../.github/workflows/release.yml) (`dev`, `stg`)
+- Production CD: [`.github/workflows/cd.yml`](../.github/workflows/cd.yml) (`main`) · [`docs/releases.md`](./releases.md)
 - Promotion gate: [`.github/workflows/branch-promotion.yml`](../.github/workflows/branch-promotion.yml)
 - Test matrix: [`docs/testing.md`](./testing.md)
 
@@ -14,6 +15,8 @@ feature/*  ──PR──►  dev  ──PR──►  stg  ──PR──►  ma
                      │             │             │
                   ci gates      ci gates      ci gates
                      │             │             │
+                 release.yml   release.yml    cd.yml
+                     │             │             │
                  2.2.0-dev.N   2.2.0-rc.N      2.2.0
                   npm @dev      npm @rc      npm @latest
                                                  │
@@ -21,8 +24,11 @@ feature/*  ──PR──►  dev  ──PR──►  stg  ──PR──►  ma
 ```
 
 Three channels, one release line. `dev` is where work lands, `stg` is the release candidate,
-`main` is what `npm install kwami` gives you. Every channel releases automatically on a green
-push; nothing is versioned by hand.
+`main` is what `npm install kwami` gives you. A green push to `dev` or `stg` is released by
+[`release.yml`](../.github/workflows/release.yml). A successful merge into `main` is the
+production CD: [`cd.yml`](../.github/workflows/cd.yml) versions, writes `CHANGELOG.md`, cuts
+the GitHub Release, and publishes the newest unpublished tag to npm `latest` when `NPM_TOKEN`
+is set. Nothing is versioned by hand.
 
 ## Branch model
 
@@ -163,7 +169,7 @@ What they enforce:
 - Require branches to be up to date before merging.
 - Block force pushes and deletions.
 - Allow the `github-actions[bot]` actor to bypass the pull-request requirement — `release.yml`
-  pushes the release commit and the back-merges directly.
+  and `cd.yml` push the release commit and the back-merges directly.
 
 **On `dev`:** the same, minus the Code Owner review, and with `enforce promotion path` optional
 (the gate lets any feature branch in; it is only strict about `stg` and `main`).
@@ -194,8 +200,9 @@ workflows for pushes made with it — the version bump cannot re-run CI or relea
 `[skip actions]` marker in the message is the belt to that braces, for anything watching the
 repo from outside Actions.
 
-`release.yml` also refuses to release a tip that has drifted ahead of the commit `ci` actually
-tested: a push that landed mid-run has its own run behind it, and that one releases instead.
+`release.yml` and `cd.yml` also refuse to release a tip that has drifted ahead of the commit
+`ci` actually tested: a push that landed mid-run has its own run behind it, and that one
+releases instead.
 
 ## Local gates
 
@@ -206,3 +213,15 @@ Not a substitute for CI, but they catch the obvious before it costs a round trip
 | [`.husky/commit-msg`](../.husky/commit-msg) | `commitlint` on the message                                |
 | [`.husky/pre-commit`](../.husky/pre-commit) | `lint-staged` — ESLint + Prettier on staged files          |
 | [`.husky/pre-push`](../.husky/pre-push)     | blocks direct pushes to channels; `typecheck` + unit suite |
+
+## Environment file
+
+`.env` is encrypted with git-crypt. The blob in git is ciphertext; after unlock the
+working tree is plaintext for the runtime. On a new machine, install git-crypt and
+run this once:
+
+```bash
+git-crypt unlock ~/.config/git-crypt/kwami.io/kwami.key
+```
+
+Plaintext `.env.*` overrides stay gitignored. The key file stays outside the repo.

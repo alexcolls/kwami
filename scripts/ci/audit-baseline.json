@@ -1,4 +1,9 @@
 {
   "$comment": "Critical/high advisories that CI tolerates, checked by scripts/ci/check-audit.mjs. This list only ever shrinks: every entry needs a `reason` saying why it cannot be fixed yet, and removing one is the whole point. Adding an entry to turn a red build green is not an acceptable use.",
-  "accepted": []
+  "accepted": [
+    {
+      "id": "braces@GHSA-vfj7-8cjw-p6xm",
+      "reason": "No patched release exists. 3.0.3 is the newest version and the advisory covers every release through 3.0.3. It is pulled in by @semantic-release/git via micromatch, and it is only used while cutting a release."
+    }
+  ]
 }

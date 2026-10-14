@@ -1,0 +1,55 @@
+name: cd
+
+# Final production pipeline. After a green *push* to `main` (a successful merge of `stg`):
+#
+#   1. semantic-release versions, regenerates CHANGELOG.md, tags, and cuts the GitHub Release
+#   2. `pnpm publish:latest` publishes the newest unpublished `v*` tag to npm `latest`
+#      when NPM_TOKEN is set — and skips with a notice when it is not, so a missing secret
+#      cannot fail the changelog / GitHub Release
+#
+# Prereleases stay on `release.yml` (`dev` → npm `dev`, `stg` → npm `rc`). This workflow is
+# the only one that cuts a stable version.
+#
+# It runs on the back of `ci` rather than on the push itself, so no version is ever cut from a
+# red commit. The release commit is pushed with GITHUB_TOKEN, which by design does not trigger
+# workflows — the version bump cannot re-run CI or release itself in a loop.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+# Push the release commit and the tag back to main, and cut the GitHub Release.
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  # npm provenance: the publish is attested to this workflow run.
+  id-token: write
+
+# Never two production releases at once, and never cancel one mid-tag.
+concurrency:
+  group: cd-main
+  cancel-in-progress: false
+
+jobs:
+  cd:
+    name: release · changelog · npm
+    # `workflow_run` also fires for the PR runs of `ci`; only a green *push* to main counts.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push')
+    uses: ./.github/workflows/release-channel.yml
+    with:
+      branch: main
+      tested_sha: ${{ github.event.workflow_run.head_sha || '' }}
+      publish_latest: true
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write

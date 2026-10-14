@@ -55,25 +55,25 @@ export default defineConfig({
        * build pass — that turns a ratchet back into a suggestion.
        */
       /**
-       * Measured 2026-09-16 after the agent-lifecycle suite landed: 46.35 / 42.58 / 48.04 /
-       * 46.36. The floor sits a couple of points under each — v8 drifts slightly run to run,
-       * and newly added SOURCE dilutes the ratio until its tests land, so a floor set flush
-       * against the last reading turns red for reasons that are not a regression.
+       * Measured 2026-10-14 after the jarvis orchestration suite landed: 57.11 / 53.51 /
+       * 55.20 / 57.76. The floor sits a couple of points under each — v8 drifts slightly run
+       * to run, and newly added SOURCE dilutes the ratio until its tests land, so a floor set
+       * flush against the last reading turns red for reasons that are not a regression.
        *
        * (Earlier readings: 33.74 / 29.78 / 38.95 / 33.29 at a 31/27/36/31 floor on 2026-09-04,
-       * then 38.92 / 37.02 / 42.35 / 38.38 at 36/34/40/36. Both jumps came from
-       * tests/helpers/fake-livekit.ts, which drives a pipeline through a real connect and took
-       * Agent.ts from 0% to 56% and VoiceSession.ts off zero.)
+       * then 38.92 / 37.02 / 42.35 / 38.38 at 36/34/40/36, then 46.35 / 42.58 / 48.04 / 46.36
+       * at 44/40/46/44. The September jumps came from tests/helpers/fake-livekit.ts. This one
+       * comes from tests/unit/avatar-jarvis.test.ts, which drives Avatar through mocked
+       * renderers and took Avatar.ts from 0% to about half.)
        *
-       * The big remaining gaps are Kwami.ts and Avatar.ts. Both need a WebGL context — Kwami
-       * constructs an Avatar in its constructor — so they belong to the browser layer, not
-       * this one.
+       * The big remaining gap is Kwami.ts. It constructs an Avatar, which needs a WebGL
+       * context, so it belongs to the browser layer, not this one.
        */
       thresholds: {
-        statements: 44,
-        branches: 40,
-        functions: 46,
-        lines: 44,
+        statements: 55,
+        branches: 51,
+        functions: 53,
+        lines: 55,
       },
     },
   },
