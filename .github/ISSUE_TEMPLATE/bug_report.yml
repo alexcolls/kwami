@@ -1,0 +1,109 @@
+name: Bug report
+description: Something in the published kwami package is broken.
+title: 'fix: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search [existing issues](https://github.com/kwami-labs/kwami/issues) first.
+        Vulnerabilities go to [SECURITY.md](https://github.com/kwami-labs/kwami/blob/HEAD/SECURITY.md), not here.
+        Usage questions belong on a [question](./question.yml).
+        What to include: [SUPPORT.md](https://github.com/kwami-labs/kwami/blob/HEAD/SUPPORT.md).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened
+      description: One or two sentences. What you expected, what you got.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: >
+        A canvas, `new Kwami(…)`, and the call that fails. Strip tokens and API
+        keys. A whole application is not a reproduction.
+      render: ts
+      placeholder: |
+        import { Kwami } from 'kwami'
+
+        const kwami = new Kwami(canvas, { soul: { name: 'Kaya' } })
+        await kwami.connect('user-123')
+    validations:
+      required: true
+
+  - type: input
+    id: kwami-version
+    attributes:
+      label: kwami version
+      description: '`Kwami.getVersion()` or the resolved package version.'
+      placeholder: '2.1.1'
+    validations:
+      required: true
+
+  - type: input
+    id: three-version
+    attributes:
+      label: three version
+      description: Peer dependency. `pnpm why three` if you are unsure.
+      placeholder: '0.186.0'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: channel
+    attributes:
+      label: Install channel
+      options:
+        - latest (npm install kwami)
+        - rc (kwami@rc)
+        - dev (kwami@dev)
+        - linked / from source
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      placeholder: 'Chrome 131, Firefox 134, Safari 18, …'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: when
+    attributes:
+      label: When does it fail
+      options:
+        - Before connect() — construct / render only
+        - During connect()
+        - After the room is up
+        - On disconnect / dispose
+        - Unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console / network
+      description: >
+        Paste errors. Redact LiveKit tokens, JWTs, and provider keys. The
+        library logger already masks secrets — do not un-mask them.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues
+          required: true
+        - label: This is not a vulnerability (those go to SECURITY.md)
+          required: true
+        - label: No secrets are in this report
+          required: true

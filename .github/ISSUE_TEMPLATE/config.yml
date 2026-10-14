@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Read the docs
+    url: https://github.com/kwami-labs/kwami#documentation
+    about: README, contributing, testing, CI, and release guides
+  - name: How to get support
+    url: https://github.com/kwami-labs/kwami/blob/HEAD/SUPPORT.md
+    about: Where to ask, what to include, and what we cannot debug
+  - name: Security vulnerability
+    url: https://github.com/kwami-labs/kwami/security/advisories/new
+    about: Private report — do not open a public issue
+  - name: Code of Conduct
+    url: https://github.com/kwami-labs/kwami/blob/HEAD/CODE_OF_CONDUCT.md
+    about: Community standards and how to report an incident

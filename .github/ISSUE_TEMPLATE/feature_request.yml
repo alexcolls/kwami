@@ -1,0 +1,69 @@
+name: Feature request
+description: Propose a change to the library's public surface or behavior.
+title: 'feat: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A feature request is a change to **this package**. Framework wrappers,
+        hosting, and provider models that are not in this repo belong on a
+        [question](./question.yml) or your own codebase.
+
+        If you intend to implement it, read
+        [CONTRIBUTING.md](https://github.com/kwami-labs/kwami/blob/HEAD/CONTRIBUTING.md)
+        first — PRs target `dev` and need a Conventional Commit title.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is painful or impossible with the current API?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: >
+        The smallest API change that would solve it. Name the export, option, or
+        renderer. "Make it smarter" is not a proposal.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Avatar / renderers / scene
+        - Agent / voice / LiveKit adapter
+        - Soul / presets
+        - Memory
+        - Tools / MCP
+        - Skills
+        - Public types / package exports
+        - Docs / DX
+        - Unsure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Would this break existing callers
+      options:
+        - 'No — additive (new export or optional field)'
+        - 'Yes — needs a BREAKING CHANGE footer'
+        - Unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What did you try with the current API?
+    validations:
+      required: false

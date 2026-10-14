@@ -1,5 +1,8 @@
 # Security Policy
 
+Usage questions and non-security bugs belong in [`SUPPORT.md`](./SUPPORT.md), not
+here.
+
 ## Supported versions
 
 Kwami releases from three channels; only the stable line receives security fixes.

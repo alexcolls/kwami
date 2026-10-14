@@ -26,6 +26,7 @@
 [![contributors](https://img.shields.io/github/contributors/kwami-labs/kwami.svg)](https://github.com/kwami-labs/kwami/graphs/contributors)
 [![code size](https://img.shields.io/github/languages/code-size/kwami-labs/kwami.svg)](https://github.com/kwami-labs/kwami)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+[![code of conduct](https://img.shields.io/badge/code%20of%20conduct-Contributor%20Covenant-ff69b4.svg)](./CODE_OF_CONDUCT.md)
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?logo=prettier&logoColor=white)](https://prettier.io/)
 [![linted with eslint](https://img.shields.io/badge/linted-ESLint-4B32C3.svg?logo=eslint&logoColor=white)](https://eslint.org/)
@@ -48,7 +49,7 @@
 
 > Avatar · voice · memory · tools · skills
 
-Site: [kwami.io](https://kwami.io) · Package: [npmjs.com/package/kwami](https://www.npmjs.com/package/kwami)
+Site: [kwami.io](https://kwami.io) · Package: [npmjs.com/package/kwami](https://www.npmjs.com/package/kwami) · Support: [SUPPORT.md](./SUPPORT.md)
 
 ---
 
@@ -58,11 +59,14 @@ Site: [kwami.io](https://kwami.io) · Package: [npmjs.com/package/kwami](https:/
 - [Features](#features)
 - [Architecture](#architecture)
 - [Quick start](#quick-start)
+- [Usage](#usage)
 - [Getting started](#getting-started)
 - [Scripts](#scripts)
 - [Project structure](#project-structure)
 - [Documentation](#documentation)
+- [Support](#support)
 - [Contributing](#contributing)
+- [Code of conduct](#code-of-conduct)
 - [Security](#security)
 - [Releases](#releases)
 - [License](#license)
@@ -83,6 +87,8 @@ Each `Kwami` instance is an independent agent:
 | **Skills** | Native in-process behaviors                                                     |
 
 Several instances can share a page. Configuration can change after `connect()` without tearing the room down.
+
+The avatar is local: `new Kwami(canvas)` draws immediately. Voice, memory, and tool dispatch need a LiveKit-backed agent and a token endpoint you control — the library does not host those for you.
 
 ```ts
 import { Kwami } from 'kwami';
@@ -148,6 +154,8 @@ pnpm add kwami three
 
 `three` is a **peer** dependency. Install it beside `kwami`; do not rely on a transitive copy.
 
+A WebGL2-capable browser is required. The avatar mounts without a backend; `connect()` needs a token endpoint and an agent identity your server mints — see [Connecting](#connecting).
+
 ```ts
 import { Kwami } from 'kwami';
 
@@ -174,7 +182,105 @@ pnpm add kwami@dev      # prerelease (dev)
 
 ---
 
+## Usage
+
+### Soul presets
+
+```ts
+import { Kwami, getSoulPresetById, toSoulConfig } from 'kwami';
+
+const kaya = getSoulPresetById('friendly');
+const kwami = new Kwami(canvas, {
+  soul: kaya ? toSoulConfig(kaya) : { name: 'Kaya' },
+});
+```
+
+Presets include Kaya, Nexus, Phoenix, Haven, Sage, and others (`soulPresets` / `getSoulPresetsByCategory`). Traits can change after connect:
+
+```ts
+kwami.updateSoul({ emotionalTone: 'enthusiastic' });
+```
+
+### Avatar
+
+```ts
+const kwami = new Kwami(canvas, {
+  avatar: { renderer: 'blob-xyz' }, // or 'black-hole' | 'particles-face' | 'eye-iris'
+});
+```
+
+### Connecting
+
+Pin the agent participant and keep provider keys on the server. The adapter treats that identity as authoritative for audio, transcripts, and `tool_call` messages.
+
+```ts
+const kwami = new Kwami(canvas, {
+  soul: { name: 'Kaya' },
+  agent: {
+    livekit: {
+      tokenEndpoint: '/api/livekit/token',
+      agentIdentity: 'agent-7f3a', // or agentIdentityPrefix: 'kwami-agent:'
+    },
+  },
+});
+
+await kwami.connect('user-123', {
+  onStateChange: (state) => {
+    /* idle | listening | thinking | speaking */
+  },
+  onUserTranscript: (text) => {},
+  onAgentResponse: (text) => {},
+  onError: (error) => console.error(error),
+});
+```
+
+Do not put LLM / TTS / STT API keys in the browser. Details: [SECURITY.md](./SECURITY.md#deploying-safely).
+
+### Tools
+
+```ts
+kwami.registerTool({
+  name: 'get_weather',
+  description: 'Current weather for a city',
+  parameters: {
+    type: 'object',
+    properties: { city: { type: 'string' } },
+    required: ['city'],
+  },
+  handler: async ({ city }) => fetchWeather(String(city)),
+});
+```
+
+MCP servers can be passed in `tools.mcp`; `connect()` waits for them before dispatching the agent.
+
+### Skills
+
+```ts
+kwami.skills.register({
+  name: 'wave',
+  description: 'Play a greeting on the avatar',
+  trigger: 'action',
+  execute: async ({ kwami: instance }) => {
+    // drive the local avatar / UI
+    return { success: true, message: 'waved' };
+  },
+});
+```
+
+### Lifecycle
+
+Always `dispose()` when the canvas leaves the page. Instances stay in a process-wide registry until you do; an unmounted component leaks the WebGL context and the LiveKit room.
+
+```ts
+await kwami.disconnect();
+kwami.dispose();
+```
+
+---
+
 ## Getting started
+
+This section is for **working on the library**. Consumers only need [Quick start](#quick-start).
 
 ### Prerequisites
 
@@ -255,10 +361,12 @@ kwami/
 │   ├── ci/               # Pipeline gates
 │   └── release/          # Baseline tag, back-merge
 ├── docs/                 # Deep-dive guides
-├── .github/              # Workflows, PR template, CODEOWNERS
+├── .github/              # Workflows, issue/PR templates, CODEOWNERS
 ├── CHANGELOG.md          # Generated by semantic-release
+├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
+├── SUPPORT.md
 ├── LICENSE               # Apache-2.0
 └── package.json
 ```
@@ -267,21 +375,35 @@ kwami/
 
 ## Documentation
 
-| Document                               | Description                                  |
-| -------------------------------------- | -------------------------------------------- |
-| [CONTRIBUTING.md](./CONTRIBUTING.md)   | Setup, branches, commits, PR checklist       |
-| [SECURITY.md](./SECURITY.md)           | Supported versions & vulnerability reporting |
-| [CHANGELOG.md](./CHANGELOG.md)         | Released changes (generated)                 |
-| [docs/ci-cd.md](./docs/ci-cd.md)       | CI pipeline & promotion gate                 |
-| [docs/releases.md](./docs/releases.md) | Channels, version bumps, troubleshooting     |
-| [docs/testing.md](./docs/testing.md)   | Unit / integration / e2e layers              |
-| [LICENSE](./LICENSE)                   | Apache License 2.0 (full text)               |
+| Document                                   | Description                                    |
+| ------------------------------------------ | ---------------------------------------------- |
+| [SUPPORT.md](./SUPPORT.md)                 | How to get help, and what belongs in an issue  |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)       | Setup, branches, commits, PR checklist         |
+| [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) | Community standards (Contributor Covenant 2.1) |
+| [SECURITY.md](./SECURITY.md)               | Supported versions & vulnerability reporting   |
+| [CHANGELOG.md](./CHANGELOG.md)             | Released changes (generated)                   |
+| [docs/ci-cd.md](./docs/ci-cd.md)           | CI pipeline & promotion gate                   |
+| [docs/releases.md](./docs/releases.md)     | Channels, version bumps, troubleshooting       |
+| [docs/testing.md](./docs/testing.md)       | Unit / integration / e2e layers                |
+| [LICENSE](./LICENSE)                       | Apache License 2.0 (full text)                 |
+
+---
+
+## Support
+
+Something broken, unclear, or missing? **[SUPPORT.md](./SUPPORT.md)** is the map — questions, bugs, features, and what we cannot debug from an issue (your LiveKit project, provider keys, page wrappers).
+
+- Questions: [open a question](https://github.com/kwami-labs/kwami/issues/new?template=question.yml)
+- Bugs: [open a bug report](https://github.com/kwami-labs/kwami/issues/new?template=bug_report.yml)
+- Ideas: [open a feature request](https://github.com/kwami-labs/kwami/issues/new?template=feature_request.yml)
+
+Please search existing issues first. Do not paste tokens or API keys.
 
 ---
 
 ## Contributing
 
-Contributions are welcome. Please read **[CONTRIBUTING.md](./CONTRIBUTING.md)** before opening a PR.
+Contributions are welcome. Please read **[CONTRIBUTING.md](./CONTRIBUTING.md)** and the **[Code of Conduct](./CODE_OF_CONDUCT.md)** before opening a PR.
 
 **Branch promotion** (enforced in CI):
 
@@ -295,6 +417,14 @@ feature/* ──► dev ──► stg ──► main
 - Before push: `pnpm lint && pnpm typecheck && pnpm test:unit && pnpm test:integration`
 
 Issue tracker: [github.com/kwami-labs/kwami/issues](https://github.com/kwami-labs/kwami/issues)
+
+---
+
+## Code of conduct
+
+This project follows the [Contributor Covenant](https://www.contributor-covenant.org/). By participating you agree to the **[CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)**.
+
+Reports: <alexcollsoutumuro@gmail.com>. Do not post accusations in a public issue.
 
 ---
 

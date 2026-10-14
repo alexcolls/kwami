@@ -39,5 +39,6 @@ Examples: feat(avatar): add eye-iris renderer · fix(agent): dedupe interim tran
 
 - [ ] Targets `dev` (the promote path is `feature/* → dev → stg → main`)
 - [ ] Conventional Commit title
+- [ ] Follows the [Code of Conduct](../CODE_OF_CONDUCT.md)
 - [ ] No secrets, `.env` values, or build output committed
 - [ ] `CHANGELOG.md` and the `version` field untouched — semantic-release owns them

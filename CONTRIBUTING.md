@@ -3,6 +3,9 @@
 Thanks for working on Kwami. This covers the workflow; the [`README`](./README.md) covers the
 library itself and [`docs/`](./docs) holds the deep dives.
 
+Participation is covered by the [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md). Questions and
+bug reports belong in [`SUPPORT.md`](./SUPPORT.md), not in a drive-by PR.
+
 ## Setup
 
 Kwami is a **pnpm** repository. `pnpm-lock.yaml` is the lockfile of record and CI installs with

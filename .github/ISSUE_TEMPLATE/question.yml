@@ -1,0 +1,53 @@
+name: Question
+description: How do I use Kwami? Not a bug, not a feature.
+title: 'docs: '
+labels: ['question']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read [SUPPORT.md](https://github.com/kwami-labs/kwami/blob/HEAD/SUPPORT.md) first.
+        If something is **broken**, use a [bug report](./bug_report.yml). If you want
+        the library to change, use a [feature request](./feature_request.yml).
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What are you trying to do, and where did the docs fall short?
+    validations:
+      required: true
+
+  - type: input
+    id: kwami-version
+    attributes:
+      label: kwami version
+      placeholder: '2.1.1'
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Getting started / install
+        - Avatar
+        - Voice / LiveKit / connect()
+        - Soul
+        - Memory
+        - Tools / MCP
+        - Skills
+        - Releases / npm tags
+        - Contributing / CI
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you already tried
+      description: Docs you read, snippets you ran, errors you hit.
+    validations:
+      required: false
