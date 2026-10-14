@@ -7,7 +7,8 @@ name: branch promotion
 # The rules live in scripts/ci/assert-promotion-path.mjs and are unit-tested by
 # assert-promotion-path.test.mjs (run by the `unit` job in ci.yml). For `stg` and `main` the
 # head must be THIS repository's current tip of `dev` / `stg` — not a fork, and not a namesake
-# branch. Back-merges into the lower channels are pushed by release.yml, never merged by PR.
+# branch. Back-merges into the lower channels are pushed by cd.yml (after a main release),
+# never merged by PR.
 #
 # Make `enforce promotion path` a required status check on `stg` and `main` so the gate cannot
 # be dismissed — see docs/ci-cd.md for the exact ruleset.
@@ -75,7 +76,7 @@ jobs:
             '' \
             '- PRs into `stg` must be from this repo'\''s current tip of `dev`.' \
             '- PRs into `main` must be from this repo'\''s current tip of `stg`.' \
-            '- Back-merges into `stg` and `dev` are pushed by `release.yml`, not opened as PRs.' \
+            '- Back-merges into `stg` and `dev` are pushed by `cd.yml`, not opened as PRs.' \
             '' \
             'Rules: `scripts/ci/assert-promotion-path.mjs` · Docs: `docs/ci-cd.md`.')
           # Update the existing comment rather than stacking a new one on every synchronize.

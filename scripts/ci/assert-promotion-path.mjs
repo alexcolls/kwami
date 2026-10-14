@@ -11,7 +11,7 @@
  * synced, so the same-repo check is load-bearing — without it, a fork could promote itself into
  * production. PRs into `dev` still allow forks, because that is where outside contributions
  * land; only back-merges from `stg`/`main` are rejected there, since those are pushed by
- * `release.yml` / `sync-branches.mjs` rather than merged by PR.
+ * `cd.yml` / `sync-branches.mjs` rather than merged by PR.
  *
  * Exported separately from the CLI so `assert-promotion-path.test.mjs` can cover the rules
  * without a network call. Usage (CI sets the env vars):
@@ -60,7 +60,7 @@ export function evaluatePromotion(input) {
     if (DOWNSTREAM_OF_DEV.has(head)) {
       return {
         ok: false,
-        reason: `'${head}' is downstream of dev; back-merges are pushed by release.yml, not merged by PR.`,
+        reason: `'${head}' is downstream of dev; back-merges are pushed by cd.yml, not merged by PR.`,
       };
     }
     return { ok: true };
