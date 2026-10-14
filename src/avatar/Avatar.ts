@@ -5,6 +5,7 @@ import { BlobXyz } from './renderers/blob-xyz/index.js'
 import { BlackHole } from './renderers/black-hole/index.js'
 import { ParticlesFace } from './renderers/particles-face/index.js'
 import { EyeIris } from './renderers/eye-iris/index.js'
+import { Jarvis } from './renderers/jarvis/index.js'
 import { KwamiAudio } from './audio/index.js'
 import { logger } from '../utils/logger.js'
 import * as THREE from 'three'
@@ -22,6 +23,7 @@ export class Avatar {
   private blackHole: BlackHole | null = null
   private particlesFace: ParticlesFace | null = null
   private eyeIris: EyeIris | null = null
+  private jarvis: Jarvis | null = null
   private audio: KwamiAudio
   private currentState: KwamiState = 'idle'
   private resizeObserver: ResizeObserver | null = null
@@ -104,10 +106,12 @@ export class Avatar {
     this.blackHole?.dispose()
     this.particlesFace?.dispose()
     this.eyeIris?.dispose()
+    this.jarvis?.dispose()
     this.blobXyz = null
     this.blackHole = null
     this.particlesFace = null
     this.eyeIris = null
+    this.jarvis = null
   }
 
   private initRenderer(): void {
@@ -125,6 +129,9 @@ export class Avatar {
     } else if (rendererType === 'eye-iris') {
       this.currentRenderer = 'eye-iris'
       this.initEyeIrisRenderer()
+    } else if (rendererType === 'jarvis') {
+      this.currentRenderer = 'jarvis'
+      this.initJarvisRenderer()
     } else {
       logger.warn(`Renderer type "${rendererType}" not supported, falling back to blob-xyz`)
       this.currentRenderer = 'blob-xyz'
@@ -135,7 +142,9 @@ export class Avatar {
 
   private updateSceneControlsForRenderer(): void {
     if (!this.scene.controls) return
-    this.scene.controls.enabled = this.sceneControlsInitiallyEnabled && this.currentRenderer !== 'eye-iris'
+    // eye-iris and jarvis are camera-facing and handle pointer interaction themselves.
+    this.scene.controls.enabled =
+      this.sceneControlsInitiallyEnabled && this.currentRenderer !== 'eye-iris' && this.currentRenderer !== 'jarvis'
   }
 
   private initBlobXyzRenderer(): void {
@@ -255,6 +264,14 @@ export class Avatar {
     })
   }
 
+  private initJarvisRenderer(): void {
+    this.jarvis = new Jarvis(this.scene.scene, this.scene.camera, this.scene.renderer, {
+      ...(this.config.jarvis ?? {}),
+      audio: this.audio,
+    })
+    this.jarvis.setState(this.currentState)
+  }
+
   private setupResizeHandling(): void {
     this.resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -269,6 +286,7 @@ export class Avatar {
           // the Scene knows about. Without this its post-processing chain stayed at the size
           // it was built with, so any resize skewed the lensing and blurred the bloom.
           this.blackHole?.onResize(width, height)
+          this.jarvis?.onResize(width, height)
         }
       }
     })
@@ -317,6 +335,9 @@ export class Avatar {
     }
     if (this.currentRenderer === 'eye-iris' && this.eyeIris) {
       this.eyeIris.setState(state)
+    }
+    if (this.currentRenderer === 'jarvis' && this.jarvis) {
+      this.jarvis.setState(state)
     }
 
     logger.debug(`Avatar state changed: ${previousState} → ${state}`)
@@ -368,6 +389,8 @@ export class Avatar {
       this.initParticlesFaceRenderer()
     } else if (newRenderer === 'eye-iris') {
       this.initEyeIrisRenderer()
+    } else if (newRenderer === 'jarvis') {
+      this.initJarvisRenderer()
     }
     this.updateSceneControlsForRenderer()
 
@@ -404,6 +427,10 @@ export class Avatar {
 
   getEyeIris(): EyeIris | null {
     return this.eyeIris
+  }
+
+  getJarvis(): Jarvis | null {
+    return this.jarvis
   }
 
   /**
@@ -508,6 +535,9 @@ export class Avatar {
       this.eyeIris?.setRadialStreakStrength(THREE.MathUtils.randFloat(0.4, 1.0))
       this.eyeIris?.setCollaretteStrength(THREE.MathUtils.randFloat(0.3, 0.9))
       this.eyeIris?.setLimbalIntensity(THREE.MathUtils.randFloat(0.5, 1.0))
+    } else if (this.currentRenderer === 'jarvis') {
+      const palettes = ['holo-cyan', 'neon-violet', 'arc-white', 'alert-amber'] as const
+      this.jarvis?.setPalettePreset(palettes[Math.floor(Math.random() * palettes.length)]!)
     }
   }
 
@@ -526,6 +556,9 @@ export class Avatar {
   onDoubleClick(callback: () => void | Promise<void>): void {
     if (this.blobXyz) {
       this.blobXyz.onDoubleClick = callback
+    }
+    if (this.jarvis) {
+      this.jarvis.onDoubleClick = callback
     }
   }
 
