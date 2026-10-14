@@ -5,8 +5,8 @@ name: ci
 #   feature/* → dev → stg → main
 #
 # Gates run on PRs into `dev`, `stg` and `main`, and again on the push that lands them. A
-# stg → main PR therefore gets the full suite before anyone merges it, and `release.yml` only
-# ever fires on the back of a green run here — no version is cut from a red commit.
+# stg → main PR therefore gets the full suite before anyone merges it, and `release.yml` /
+# `cd.yml` only ever fire on the back of a green run here — no version is cut from a red commit.
 #
 # The whole matrix runs on every channel. Kwami is a published library: there is no "cheap"
 # environment where a broken build is survivable, because the artifact is the product.

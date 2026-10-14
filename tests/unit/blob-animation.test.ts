@@ -109,3 +109,80 @@ describe('blob audio smoothing isolation', () => {
     }
   });
 });
+
+describe('blob rest directions', () => {
+  it('does not bake liquid stretch into a cone the mesh cannot leave', () => {
+    const mesh = blobMesh();
+    const positions = mesh.geometry.attributes.position!;
+    const originals: [number, number, number][] = [];
+    for (let i = 0; i < positions.count; i++) {
+      const x = positions.getX(i);
+      const y = positions.getY(i);
+      const z = positions.getZ(i);
+      const length = Math.hypot(x, y, z) || 1;
+      originals.push([x / length, y / length, z / length]);
+    }
+
+    const { analyser, data } = analyserAt(0);
+    const liquid = { velocityX: 0, velocityY: 0.08, stretch: 0.6 };
+    for (let frame = 0; frame < 80; frame++) {
+      animateBlobXyz(
+        mesh,
+        data,
+        analyser,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        [],
+        0,
+        0,
+        0,
+        undefined,
+        liquid,
+      );
+    }
+
+    liquid.velocityY = 0;
+    for (let frame = 0; frame < 40; frame++) {
+      animateBlobXyz(
+        mesh,
+        data,
+        analyser,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        [],
+        0,
+        0,
+        0,
+        undefined,
+        liquid,
+      );
+    }
+
+    for (let i = 0; i < positions.count; i++) {
+      const x = positions.getX(i);
+      const y = positions.getY(i);
+      const z = positions.getZ(i);
+      const length = Math.hypot(x, y, z) || 1;
+      const original = originals[i]!;
+      const alignment =
+        (x / length) * original[0] + (y / length) * original[1] + (z / length) * original[2];
+      expect(alignment).toBeGreaterThan(0.98);
+    }
+  });
+});
